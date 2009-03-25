@@ -1,0 +1,40 @@
+
+nettcp is the subsystem of the networking (netmesh) harness
+
+it started and stopped by netmesh only
+
+netmesh may request opening of sinks (listening tcp sockets)
+
+netmesh may dispatch a message for delivery using nettcp
+
+messages received through nettcp should be fed to the handler routine supplied by netmesh
+
+nettcp has no notion of node, only connection specs
+
+1. opening of a sink with specification Spec1 is requested. The specification is usually
+just the tcp port number.
+
+a) If sink with the same spec is already open then nothing is done
+
+b) Opening of the sink attempted (using listen()). No need to make it in a separate
+process. The process that accepts connection should be separate because only this
+process may recv messages.
+
+c) If listen() returns error then open_sink returns that error to netmesh. netmesh may
+choose ignore it.
+
+d) If listen() succeeds then the reader is started using a fun() extension to accept
+the connection first. The extension should notify the parent process on the outcome
+of accept(). If accept() fails then it signal that the sink is no good and it should
+be removed. If accept() succeed that we have a fully functional reader process, which
+reports its presence to the parent too.
+
+e) The sink is registered right after listen succeeds. Later a message from the reader
+process being constructed (waiting in accept) may send a message to signal that the
+sink is no good and should be removed.
+
+f) Sink is {Sock,Pid} of the listening socket Sock and Pid of the process accepting
+connections when new connection is reported the information on the Pid is updated
+
+//g) To avoid the situation when acceptor changes during closing of sinks, a separate
+//process should be launched to 
