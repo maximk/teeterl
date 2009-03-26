@@ -38,7 +38,7 @@ directory.
 4. Edit Makefile and replace APR library and include files locations as well
 as paths of Erlang/OTP binaries.
 
-5. Run 'make compile'.
+5. Run 'make all'.
 
 6. Wait a few minutes for the build to complete.
 
