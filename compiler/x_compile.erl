@@ -1051,17 +1051,107 @@ hex_dump(Name, Bin, St) ->
 	io:format(Out, "// EOF~n", []),
 	file:close(Out).
 
-hex(Out, Bin) -> hex(Out, Bin, 0).
-hex(Out, <<B,Bin/binary>>, 0) ->
-	io:format(Out, "\t~4.16x, ", [B,"0x"]),
-	hex(Out, Bin, 1);
-hex(Out, <<B,Bin/binary>>, 15) ->
-	io:format(Out, "~4.16x,~n", [B,"0x"]),
-	hex(Out, Bin, 0);
-hex(Out, <<B,Bin/binary>>, N) ->
-	io:format(Out, "~4.16x, ", [B,"0x"]),
-	hex(Out, Bin, N+1);
-hex(_, <<>>, _) -> true.
+hex(Out, <<B0,B1,B2,B3,B4,B5,B6,B7,B8,B9,BA,BB,BC,BD,BE,BF,Bin/binary>>) ->
+	io:format(Out, "\t~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, "
+				   "~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x,~n",
+				   [B0,"0x",B1,"0x",B2,"0x",B3,"0x",B4,"0x",B5,"0x",B6,"0x",B7,"0x",
+				    B8,"0x",B9,"0x",BA,"0x",BB,"0x",BC,"0x",BD,"0x",BE,"0x",BF,"0x"]),
+	hex(Out, Bin);
+hex(Out, <<B0,B1,B2,B3,B4,B5,B6,B7,B8,B9,BA,BB,BC,BD,BE,Bin/binary>>) ->
+	io:format(Out, "\t~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, "
+				   "~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x,~n",
+				   [B0,"0x",B1,"0x",B2,"0x",B3,"0x",B4,"0x",B5,"0x",B6,"0x",B7,"0x",
+				    B8,"0x",B9,"0x",BA,"0x",BB,"0x",BC,"0x",BD,"0x",BE,"0x"]),
+	hex(Out, Bin);
+hex(Out, <<B0,B1,B2,B3,B4,B5,B6,B7,B8,B9,BA,BB,BC,BD,Bin/binary>>) ->
+	io:format(Out, "\t~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, "
+				   "~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x,~n",
+				   [B0,"0x",B1,"0x",B2,"0x",B3,"0x",B4,"0x",B5,"0x",B6,"0x",B7,"0x",
+				    B8,"0x",B9,"0x",BA,"0x",BB,"0x",BC,"0x",BD,"0x"]),
+	hex(Out, Bin);
+hex(Out, <<B0,B1,B2,B3,B4,B5,B6,B7,B8,B9,BA,BB,BC,Bin/binary>>) ->
+	io:format(Out, "\t~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, "
+				   "~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x,~n",
+				   [B0,"0x",B1,"0x",B2,"0x",B3,"0x",B4,"0x",B5,"0x",B6,"0x",B7,"0x",
+				    B8,"0x",B9,"0x",BA,"0x",BB,"0x",BC,"0x"]),
+	hex(Out, Bin);
+hex(Out, <<B0,B1,B2,B3,B4,B5,B6,B7,B8,B9,BA,BB,BC,Bin/binary>>) ->
+	io:format(Out, "\t~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, "
+				   "~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x,~n",
+				   [B0,"0x",B1,"0x",B2,"0x",B3,"0x",B4,"0x",B5,"0x",B6,"0x",B7,"0x",
+				    B8,"0x",B9,"0x",BA,"0x",BB,"0x",BC,"0x"]),
+	hex(Out, Bin);
+hex(Out, <<B0,B1,B2,B3,B4,B5,B6,B7,B8,B9,BA,BB,Bin/binary>>) ->
+	io:format(Out, "\t~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, "
+				   "~4.16x, ~4.16x, ~4.16x, ~4.16x,~n",
+				   [B0,"0x",B1,"0x",B2,"0x",B3,"0x",B4,"0x",B5,"0x",B6,"0x",B7,"0x",
+				    B8,"0x",B9,"0x",BA,"0x",BB,"0x"]),
+	hex(Out, Bin);
+hex(Out, <<B0,B1,B2,B3,B4,B5,B6,B7,B8,B9,BA,Bin/binary>>) ->
+	io:format(Out, "\t~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, "
+				   "~4.16x, ~4.16x, ~4.16x,~n",
+				   [B0,"0x",B1,"0x",B2,"0x",B3,"0x",B4,"0x",B5,"0x",B6,"0x",B7,"0x",
+				    B8,"0x",B9,"0x",BA,"0x"]),
+	hex(Out, Bin);
+hex(Out, <<B0,B1,B2,B3,B4,B5,B6,B7,B8,B9,Bin/binary>>) ->
+	io:format(Out, "\t~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, "
+				   "~4.16x, ~4.16x,~n",
+				   [B0,"0x",B1,"0x",B2,"0x",B3,"0x",B4,"0x",B5,"0x",B6,"0x",B7,"0x",
+				    B8,"0x",B9,"0x"]),
+	hex(Out, Bin);
+hex(Out, <<B0,B1,B2,B3,B4,B5,B6,B7,B8,Bin/binary>>) ->
+	io:format(Out, "\t~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, "
+				   "~4.16x,~n",
+				   [B0,"0x",B1,"0x",B2,"0x",B3,"0x",B4,"0x",B5,"0x",B6,"0x",B7,"0x",
+				    B8,"0x"]),
+	hex(Out, Bin);
+hex(Out, <<B0,B1,B2,B3,B4,B5,B6,B7,Bin/binary>>) ->
+	io:format(Out, "\t~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x,~n",
+				   [B0,"0x",B1,"0x",B2,"0x",B3,"0x",B4,"0x",B5,"0x",B6,"0x",B7,"0x"]),
+	hex(Out, Bin);
+hex(Out, <<B0,B1,B2,B3,B4,B5,B6,Bin/binary>>) ->
+	io:format(Out, "\t~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x,~n",
+				   [B0,"0x",B1,"0x",B2,"0x",B3,"0x",B4,"0x",B5,"0x",B6,"0x"]),
+	hex(Out, Bin);
+hex(Out, <<B0,B1,B2,B3,B4,B5,Bin/binary>>) ->
+	io:format(Out, "\t~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x,~n",
+				   [B0,"0x",B1,"0x",B2,"0x",B3,"0x",B4,"0x",B5,"0x"]),
+	hex(Out, Bin);
+hex(Out, <<B0,B1,B2,B3,B4,Bin/binary>>) ->
+	io:format(Out, "\t~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x,~n",
+				   [B0,"0x",B1,"0x",B2,"0x",B3,"0x",B4,"0x"]),
+	hex(Out, Bin);
+hex(Out, <<B0,B1,B2,B3,Bin/binary>>) ->
+	io:format(Out, "\t~4.16x, ~4.16x, ~4.16x, ~4.16x,~n",
+				   [B0,"0x",B1,"0x",B2,"0x",B3,"0x"]),
+	hex(Out, Bin);
+hex(Out, <<B0,B1,B2,Bin/binary>>) ->
+	io:format(Out, "\t~4.16x, ~4.16x, ~4.16x,~n",
+				   [B0,"0x",B1,"0x",B2,"0x"]),
+	hex(Out, Bin);
+hex(Out, <<B0,B1,Bin/binary>>) ->
+	io:format(Out, "\t~4.16x, ~4.16x,~n",
+				   [B0,"0x",B1,"0x"]),
+	hex(Out, Bin);
+hex(Out, <<B0,Bin/binary>>) ->
+	io:format(Out, "\t~4.16x,~n",
+				   [B0,"0x"]),
+	hex(Out, Bin);
+hex(_Out, <<>>) ->
+	true.
+
+
+%hex(Out, Bin) -> hex(Out, Bin, 0).
+%hex(Out, <<B,Bin/binary>>, 0) ->
+%	io:format(Out, "\t~4.16x, ", [B,"0x"]),
+%	hex(Out, Bin, 1);
+%hex(Out, <<B,Bin/binary>>, 15) ->
+%	io:format(Out, "~4.16x,~n", [B,"0x"]),
+%	hex(Out, Bin, 0);
+%hex(Out, <<B,Bin/binary>>, N) ->
+%	io:format(Out, "~4.16x, ", [B,"0x"]),
+%	hex(Out, Bin, N+1);
+%hex(_, <<>>, _) -> true.
 
 %% report_errors(State) -> ok
 %% report_warnings(State) -> ok

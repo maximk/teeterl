@@ -34,10 +34,10 @@
 -import(erlang, [port_info/2,ports/0]).
 
 -define(NORMAL_ADVANTAGE, 8).
--define(REDUCTIONS, 1000).
+-define(REDUCTIONS, 10000).
 -define(MAX_HEAP_SIZE, 4*1024*1024).
 
-%% -define(TRACE, true).
+-define(TRACE, true).
 
 -ifdef(TRACE).
 -define(strace(T), T = now()).
@@ -586,8 +586,10 @@ send_notifications(Pid, Reason, Monitors) ->
 
 trace({Mega0,Sec0,Micro0}, Pid, What) ->
 	{Mega1,Sec1,Micro1} = now(),
-	Elapsed = (Mega1-Mega0) * 1000000000 + (Sec1-Sec0) * 1000 + (Micro1-Micro0) div 1000,
-	
+
+	%% Elapsed = (Mega1-Mega0) * 1000000000 + (Sec1-Sec0) * 1000 + (Micro1-Micro0) div 1000,
+	Elapsed = (Mega1-Mega0) * 1000000000000 + (Sec1-Sec0) * 1000000 + (Micro1-Micro0),
+
 	if Elapsed > 0 ->
 		{module,Module} = process_info(Pid, module),
 		{offset,Offset} = process_info(Pid, offset),

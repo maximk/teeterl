@@ -613,7 +613,9 @@ term_t proc_main(process_t *proc, int reductions, term_t *retval)
 
 	while (reductions > 0)
 	{
-		apr_byte_t opcode ;
+		apr_byte_t opcode;
+
+resume_after_catch:
 
 		if (proc->stopped_on_breakpoint)
 		{
@@ -656,8 +658,12 @@ cellar:
 
 		push(exc_class);
 		push(reason);
-
-		return AI_YIELD;
+		
+		// NB: yielding now may cause a performance hit as compiler invisibly
+		// generates helluva catches in guards, try to continue without yielding
+		//return AI_YIELD;
+		
+		goto resume_after_catch;
 	}
 	else
 	{

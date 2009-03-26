@@ -273,6 +273,9 @@ apply_me:	// label used by apply_fun
 	// call to apply2 signifies loading a new module code
 	// yielding to init means that source line info gets
 	// incorporated correctly
+	//
+	// NB: this may cause a huge performance hit
+	//
 	return AI_YIELD;
 
 /// apply_fun

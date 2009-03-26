@@ -78,6 +78,7 @@ open(FileName, Modes) ->
 		end,
 		
 		file_io_srv:start(FileName, [raw|Modes2])
+		%% file_io_srv:start(FileName, [buffered|Modes2])
 	end.
 
 path_open([Dir|Dirs], File, Mode) ->
