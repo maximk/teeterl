@@ -1075,12 +1075,6 @@ hex(Out, <<B0,B1,B2,B3,B4,B5,B6,B7,B8,B9,BA,BB,BC,Bin/binary>>) ->
 				   [B0,"0x",B1,"0x",B2,"0x",B3,"0x",B4,"0x",B5,"0x",B6,"0x",B7,"0x",
 				    B8,"0x",B9,"0x",BA,"0x",BB,"0x",BC,"0x"]),
 	hex(Out, Bin);
-hex(Out, <<B0,B1,B2,B3,B4,B5,B6,B7,B8,B9,BA,BB,BC,Bin/binary>>) ->
-	io:format(Out, "\t~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, "
-				   "~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x,~n",
-				   [B0,"0x",B1,"0x",B2,"0x",B3,"0x",B4,"0x",B5,"0x",B6,"0x",B7,"0x",
-				    B8,"0x",B9,"0x",BA,"0x",BB,"0x",BC,"0x"]),
-	hex(Out, Bin);
 hex(Out, <<B0,B1,B2,B3,B4,B5,B6,B7,B8,B9,BA,BB,Bin/binary>>) ->
 	io:format(Out, "\t~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, ~4.16x, "
 				   "~4.16x, ~4.16x, ~4.16x, ~4.16x,~n",

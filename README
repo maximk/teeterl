@@ -18,6 +18,9 @@ The build process also requires Erlang/OTP installed (at least as recent
 as R12B-0). Again Erlang/OTP is needed for bootstrapping teeterl only. When
 built for the first time, it may be used to build itself.
 
+Note that currently only 32-bit systems are supported and the system will
+refuse to built on 64-bits.
+
 INSTALLATION
 
 teeterl is tested on Mac OSX (Leopard), Linux (Ubuntu) and Windows XP. Nothing

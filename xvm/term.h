@@ -34,11 +34,24 @@
 #include "xpool.h"
 #include "bignum.h"
 
-#if APR_SIZEOF_VOIDP != 4
-#error Only 32-bit systems supported
-#endif
+//#if APR_SIZEOF_VOIDP != 4
+//#error Only 32-bit systems supported
+//#endif
+
+#if APR_SIZEOF_VOIDP == 4
 
 typedef apr_uint32_t term_t;
+#define TERM_BITS 32
+
+#else
+
+typedef apr_uint64_t term_t;
+#define TERM_BITS 64
+
+#endif
+
+// The following term_t layout is optimized for 32-bit
+// 64-bit term_t may need different layout
 
 #define TAG_PTR_SIZE	3
 #define TAG_PTR_MASK	0x6
@@ -132,13 +145,17 @@ typedef apr_uint32_t term_t;
 #define int_value(t)	((int)(t) >> TAG_INT_SIZE)
 #define bn_value(t)		((bignum_t *)PTR(t))
 
-#define MAX_UINT_VALUE	((1 << (32 - TAG_INT_SIZE))-1)
-#define MAX_INT_VALUE	((1 << (32 - TAG_INT_SIZE - 1))-1)
-#define MIN_INT_VALUE	((-1 << (32 - TAG_INT_SIZE - 1)))
+#define MAX_UINT_VALUE	((1 << (TERM_BITS - TAG_INT_SIZE))-1)
+#define MAX_INT_VALUE	((1 << (TERM_BITS - TAG_INT_SIZE - 1))-1)
+#define MIN_INT_VALUE	((-1 << (TERM_BITS - TAG_INT_SIZE - 1)))
 
 #define bool(ok) ((ok)? A_TRUE: A_FALSE)
 
+#if APR_SIZEOF_VOIDP == 4
 #define nil			((term_t)0xffffffff)
+#else
+#define nil			((term_t)0xffffffffffffffff)
+#endif
 
 #define intnum(n)	(((term_t)(n) << TAG_INT_SIZE) | 0x0)
 #define atom(n)		(((term_t)(n) << TAG_IMMED_SIZE) | 0x1)
