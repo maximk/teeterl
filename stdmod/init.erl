@@ -37,7 +37,7 @@
 -define(REDUCTIONS, 10000).
 -define(MAX_HEAP_SIZE, 4*1024*1024).
 
--define(TRACE, true).
+%% -define(TRACE, true).
 
 -ifdef(TRACE).
 -define(strace(T), T = now()).

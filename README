@@ -49,7 +49,7 @@ based applications. The second piece is bin/exec - an instance of such
 applications suitable for running certain Erlang functions.
 
 No new shiny shell or anything interactive at the moment. For interactivity
-you will need to download and install another project named spur which is
+you will need to download and install another project named spurl which is
 a web-based front-end to teeterl.
 
 The primary mode of operation on bin/exec is running the compiler:
@@ -66,6 +66,6 @@ a lucky one, then two files named 'filename.x' and 'filename.cx'. The latter
 is the one which is actually needed.
 
 To grasp how to make use of .cx files produced by the compiler please refer
-to the spur project sources. In short you take a bunch of .cx sources, add
+to the spurl project sources. In short you take a bunch of .cx sources, add
 a small main.c file, compile everything and link with teeterl.a and, voila,
 you have an executable with all your modules embedded. Just run it and have fun.
