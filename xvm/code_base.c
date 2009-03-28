@@ -219,7 +219,7 @@ int code_base_load(code_base_t *self,
 	xp = xpool_make(pool);
 
 	l = preloaded;
-	code = apr_palloc(pool, 4*len);
+	code = apr_palloc(pool, sizeof(celem_t)*len);
 	ip = code;
 	while (l != nil)
 	{

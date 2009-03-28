@@ -115,6 +115,8 @@ static void pack(apr_array_header_t *pad, term_t t, atom_cache_t *cache, atoms_t
 			put(EXTERM_BYTE);
 			put(v);
 		}
+		else if (v > 0x7fffffff || v < -0x80000000)	//TODO
+			fatal("unable to serialize 64-bit integer... fix~n");
 		else
 		{
 			put(EXTERM_INT);
