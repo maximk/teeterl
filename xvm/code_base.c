@@ -124,8 +124,8 @@ code_base_t *code_base_make(apr_pool_t *pool)
 	return base;
 }
 
-apr_uint32_t *code_base_lookup(code_base_t *self,
-	term_t amod, term_t afun, apr_byte_t arity, apr_uint32_t *new_mod_index, apr_uint32_t **new_code)
+celem_t *code_base_lookup(code_base_t *self,
+	term_t amod, term_t afun, apr_byte_t arity, apr_uint32_t *new_mod_index, celem_t **new_code)
 {
 	module_t *module;
 	export_t *export_item;

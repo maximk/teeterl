@@ -530,7 +530,7 @@ void proc_print_error(process_t *self, term_t e)
 	term_t m = code_base_mod_name(self->base, self->mod_index);
 	printf("*** error: %s at offset %d of module '%s'\n",
 		stringify_term(e, self->atoms, self->pool),
-		self->ip - self->code,
+		(int)(self->ip - self->code),
 		stringify_term(m, self->atoms, self->pool));
 }
 
@@ -540,7 +540,7 @@ void proc_print_init_exits_unexpectedly(process_t *self, term_t result, term_t r
 	printf("*** init exits unexpectedly: %s, %s at offset %d of module '%s'\n",
 		stringify_term(result, self->atoms, self->pool),
 		stringify_term(retval, self->atoms, self->pool),
-		self->ip - self->code,
+		(int)(self->ip - self->code),
 		stringify_term(m, self->atoms, self->pool));
 }
 

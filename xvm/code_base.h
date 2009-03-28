@@ -42,7 +42,7 @@ typedef struct code_base_t code_base_t;
 
 code_base_t *code_base_make(apr_pool_t *pool);
 celem_t *code_base_lookup(code_base_t *self,
-	term_t amod, term_t afun, apr_byte_t arity, apr_uint32_t *new_mod_index, apr_uint32_t **new_code);
+	term_t amod, term_t afun, apr_byte_t arity, apr_uint32_t *new_mod_index, celem_t **new_code);
 bifN_t code_base_bif(code_base_t *self, term_t mod, term_t fun, apr_byte_t arity);
 celem_t *code_base_starts2(code_base_t *self, term_t mod);
 celem_t *code_base_starts(code_base_t *self, apr_uint32_t index);
