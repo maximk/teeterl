@@ -64,7 +64,7 @@ struct export_t {
 		int arity;
 	} key;
 
-	apr_uint32_t *entry;		//loaded bytecode
+	celem_t *entry;		//loaded bytecode
 };
 
 typedef struct breakpoint_t breakpoint_t;
@@ -87,7 +87,7 @@ struct module_t {
 		int is_old;
 	} key;
 
-	apr_uint32_t *code;
+	celem_t *code;
 
 	apr_hash_t *exports; //key = afun:arity
 
@@ -169,7 +169,7 @@ bifN_t code_base_bif(code_base_t *self, term_t mod, term_t fun, apr_byte_t arity
 	return blt->entry;
 }
 
-apr_uint32_t *code_base_starts2(code_base_t *self, term_t mod)
+celem_t *code_base_starts2(code_base_t *self, term_t mod)
 {
 	module_t *m;
 	struct mod_key_t key;
@@ -181,7 +181,7 @@ apr_uint32_t *code_base_starts2(code_base_t *self, term_t mod)
 	return m->code;
 }
 
-apr_uint32_t *code_base_starts(code_base_t *self, apr_uint32_t index)
+celem_t *code_base_starts(code_base_t *self, apr_uint32_t index)
 {
 	module_t *m = apr_hash_get(self->modules_by_index, &index, sizeof(index));
 	if (m == 0)
@@ -206,8 +206,8 @@ int code_base_load(code_base_t *self,
 {
 	apr_pool_t *pool;
 	xpool_t *xp;
-	apr_uint32_t *code = 0;
-	apr_uint32_t *ip;
+	celem_t *code = 0;
+	celem_t *ip;
 	int len = lst_len(preloaded);
 	apr_hash_t *e;
 	module_t *m;
@@ -225,23 +225,23 @@ int code_base_load(code_base_t *self,
 	{
 		term_t v = lst_value(l);
 		if (is_int(v))
-			*ip++ = int_value(v);
+			*ip++ = (celem_t)int_value(v);
 		else if (is_tuple(v) && tup_size(v) == intnum(2))
 		{
 			term_t selector = tup_elts(v)[0];
 			term_t w = tup_elts(v)[1];
 			if (selector == A_ATOM && is_atom(w))
-				*ip++ = (apr_uint32_t) w;
+				*ip++ = (celem_t)w;
 			else if (selector == A_TERM)
 			{
 				//lit_pool enabled
-				*ip++ = lit_pool_store(self->literals, w);
+				*ip++ = (celem_t)lit_pool_store(self->literals, w);
 				//*ip++ = marshal_term(w, xp);
 			}
 			else if (selector == A_OFF && is_int(w))
 			{
 				int off = int_value(w);
-				*ip++ = (apr_uint32_t) (code + off);
+				*ip++ = (celem_t)(code + off);
 			}
 			else if (selector == A_BIF && is_tuple(w) && tup_size(w) == intnum(3))
 			{
@@ -253,7 +253,7 @@ int code_base_load(code_base_t *self,
 					entry = code_base_bif(self, A_CODE, A_UNDEFINED_BUILTIN, 0);
 				if (entry == 0)
 					return 0;
-				*ip++ = (apr_uint32_t) entry;
+				*ip++ = (celem_t)entry;
 			}
 			else
 				return 0; //unkown selector

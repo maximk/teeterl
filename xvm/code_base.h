@@ -41,11 +41,11 @@ typedef struct code_base_t code_base_t;
 #endif
 
 code_base_t *code_base_make(apr_pool_t *pool);
-apr_uint32_t *code_base_lookup(code_base_t *self,
+celem_t *code_base_lookup(code_base_t *self,
 	term_t amod, term_t afun, apr_byte_t arity, apr_uint32_t *new_mod_index, apr_uint32_t **new_code);
 bifN_t code_base_bif(code_base_t *self, term_t mod, term_t fun, apr_byte_t arity);
-apr_uint32_t *code_base_starts2(code_base_t *self, term_t mod);
-apr_uint32_t *code_base_starts(code_base_t *self, apr_uint32_t index);
+celem_t *code_base_starts2(code_base_t *self, term_t mod);
+celem_t *code_base_starts(code_base_t *self, apr_uint32_t index);
 int code_base_load(code_base_t *self, term_t amod, term_t exports, term_t preloaded);
 int code_base_load2(code_base_t *self, term_t code);
 

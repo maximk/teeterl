@@ -53,7 +53,7 @@ struct catch_t {
 	int dsp;
 	int ebp;
 	apr_uint32_t mod_index;
-	apr_uint32_t *ip;
+	celem_t *ip;
 };
 
 struct process_t {
@@ -85,8 +85,8 @@ struct process_t {
 	term_t worm;
 	int marker;
 
-	apr_uint32_t *code;
-	apr_uint32_t *ip;
+	celem_t *code;
+	celem_t *ip;
 	apr_uint32_t mod_index;
 
 	msg_queue_t *mailbox;
@@ -247,7 +247,7 @@ process_t *proc_spawn(code_base_t *base,
 
 static void proc_apply(process_t *proc, term_t mod, term_t fun, term_t args)
 {
-	apr_uint32_t *ip;
+	celem_t *ip;
 	int arity = lst_len(args);
 
 	term_t mdi = intnum(proc->mod_index);
@@ -624,7 +624,7 @@ resume_after_catch:
 		}
 		else
 		{
-			opcode = *proc->ip++;
+			opcode = (apr_byte_t)*proc->ip++;
 		} 
 
 		switch (opcode)

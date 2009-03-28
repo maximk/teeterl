@@ -41,11 +41,13 @@
 #if APR_SIZEOF_VOIDP == 4
 
 typedef apr_uint32_t term_t;
+typedef apr_uint32_t celem_t;	// "code element", for *ip, etc
 #define TERM_BITS 32
 
 #else
 
 typedef apr_uint64_t term_t;
+typedef apr_uint64_t celem_t;
 #define TERM_BITS 64
 
 #endif
