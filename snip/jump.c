@@ -82,10 +82,10 @@
 	reductions--;
 
 /// call_far(term_t amod, term_t afun, uint n)
-	apr_uint32_t *l;
+	celem_t *l;
 
 	apr_uint32_t mod_index = proc->mod_index;
-	apr_uint32_t *code = proc->code;
+	celem_t *code = proc->code;
 
 	l = code_base_lookup(proc->base,
 		amod, afun, n, &proc->mod_index, &proc->code);
@@ -119,7 +119,7 @@
 	reductions--;
 
 /// tail_call_far(uint amod, uint afun, uint n)
-	apr_uint32_t *l;
+	celem_t *l;
 
 	cs->nelts = proc->ebp;	// drop all variables
 	proc->ebp = int_value(rpop());
@@ -242,9 +242,9 @@ apply_me:	// label used by apply_fun
 	int i;
 
 	apr_uint32_t mod_index = proc->mod_index;
-	apr_uint32_t *code = proc->code;
+	celem_t *code = proc->code;
 
-	apr_uint32_t *ip;
+	celem_t *ip;
 
 	ip = code_base_lookup(proc->base,
 		mod, fun, arity, &proc->mod_index, &proc->code);
@@ -339,7 +339,7 @@ apply_me:	// label used by apply_fun
 /// ret(uint n)
 	apr_uint32_t off = int_value(rpop());
 	apr_uint32_t mod_index = int_value(rpop());
-	apr_uint32_t *code;
+	celem_t *code;
 	
 	if (mod_index == MOD_INDEX_NONE)
 	{

@@ -68,7 +68,7 @@ run_cases([SwitchFile|SnipFiles]) ->
 		  {value,{_,Body,File}} ->
 			io:format(Out, "case ~w: // ~w (~s)~n", [C,M,File]),
 			io:format(Out, "{~n", []),
-			io:format(Out, "\tapr_uint32_t *~w = (apr_uint32_t *) *proc->ip++;~n", [X]),
+			io:format(Out, "\tcelem_t *~w = (celem_t *) *proc->ip++;~n", [X]),
 			io:format(Out, "~s~n\tbreak;~n", [Body]),
 			io:format(Out, "}~n", []);
 		  false ->
