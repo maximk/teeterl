@@ -115,8 +115,6 @@ static void pack(apr_array_header_t *pad, term_t t, atom_cache_t *cache, atoms_t
 			put(EXTERM_BYTE);
 			put(v);
 		}
-		else if (v > 0x7fffffff || v < -0x80000000)	//TODO
-			fatal_err_(__FILE__, __LINE__, "unable to serialize 64-bit integer... fix~n");
 		else
 		{
 			put(EXTERM_INT);
@@ -482,7 +480,7 @@ static term_t unpack(buf_t *buf, atom_cache_t *cache, atoms_t *atoms, xpool_t *x
 		if (buf->size < 4)
 			return AI_UNDEFINED;
 		n = get32(buf);
-		elems = xalloc(xp, 4*(n+1));
+		elems = xalloc(xp, sizeof(term_t)*(n+1));
 		for (i = 0; i <= n; i++)
 		{
 			elems[i] = unpack(buf, cache, atoms, xp);

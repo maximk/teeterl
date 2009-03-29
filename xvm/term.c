@@ -473,11 +473,11 @@ const char *stringify_term(term_t t, atoms_t *atoms, apr_pool_t *pool)
 	{
 		cstr_t *print_name;
 		if (atoms == 0)
-			return apr_psprintf(pool, "#%d", index(t));
+			return apr_psprintf(pool, "#%d", (int)index(t));
 
 		print_name = atoms_get(atoms, index(t));
 		if (print_name == 0)
-			return apr_psprintf(pool, "#%d", index(t));
+			return apr_psprintf(pool, "#%d", (int)index(t));
 		else
 			return quote_atom(print_name, pool);
 	}

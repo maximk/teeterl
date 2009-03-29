@@ -208,8 +208,8 @@ process_t *proc_spawn(code_base_t *base,
 	proc->gc_cur = proc->gc_a;
 
 	proc->dict = nil;
-	proc->dstack = apr_array_make(pool, INIT_DSTACK_SIZE, 4);
-	proc->cstack = apr_array_make(pool, INIT_CSTACK_SIZE, 4);
+	proc->dstack = apr_array_make(pool, INIT_DSTACK_SIZE, sizeof(term_t));
+	proc->cstack = apr_array_make(pool, INIT_CSTACK_SIZE, sizeof(term_t));
 	proc->ebp = 0;
 	proc->catches = apr_array_make(pool, 4, sizeof(catch_t));
 	proc->stack_trace = nil;

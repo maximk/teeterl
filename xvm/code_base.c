@@ -31,6 +31,9 @@
 #include <apr_tables.h>
 #include <apr_hash.h>
 
+#define APR_WANT_MEMFUNC
+#include <apr_want.h>
+
 #include "cstr.h"
 #include "atom.h"
 #include "lit_pool.h"
@@ -45,8 +48,10 @@ struct builtin_t {
 	struct bif_key_t {
 		term_t mod;
 		term_t fun;
-		int arity;
+		apr_byte_t arity;
 	} key;
+
+	// NB: watch for padding issues when using bif_key_t structure 
 
 	bifN_t entry;
 };
@@ -61,7 +66,7 @@ typedef struct export_t export_t;
 struct export_t {
 	struct exp_key_t {
 		term_t afun;
-		int arity;
+		apr_byte_t arity;
 	} key;
 
 	celem_t *entry;		//loaded bytecode
@@ -111,8 +116,8 @@ code_base_t *code_base_make(apr_pool_t *pool)
 	base->builtins = builtins;
 	
 	base->bifs_by_mfn = apr_hash_make(pool);
-	b = base->builtins;
-	while (b->entry)
+	b = builtins;
+	while (b < builtins + sizeof(builtins)/sizeof(builtin_t))
 	{
 		apr_hash_set(base->bifs_by_mfn, &b->key, sizeof(b->key), b);
 		b++;
@@ -135,6 +140,7 @@ celem_t *code_base_lookup(code_base_t *self,
 	//*new_mod_index = MOD_INDEX_NONE;
 	//*new_code = 0;
 
+	memset(&mod_key, 0, sizeof(mod_key));
 	mod_key.amod = amod;
 	mod_key.is_old = 0;
 	module = apr_hash_get(self->modules, &mod_key, sizeof(mod_key));
@@ -142,6 +148,7 @@ celem_t *code_base_lookup(code_base_t *self,
 	if (module == 0)
 		return 0;
 
+	memset(&exp_key, 0, sizeof(exp_key));
 	exp_key.afun = afun;
 	exp_key.arity = arity;
 	export_item = apr_hash_get(module->exports, &exp_key, sizeof(exp_key));
@@ -158,6 +165,8 @@ bifN_t code_base_bif(code_base_t *self, term_t mod, term_t fun, apr_byte_t arity
 {
 	builtin_t *blt;
 	struct bif_key_t key;
+
+	memset(&key, 0, sizeof(key));
 	key.mod = mod;
 	key.fun = fun;
 	key.arity = arity;
@@ -173,6 +182,8 @@ celem_t *code_base_starts2(code_base_t *self, term_t mod)
 {
 	module_t *m;
 	struct mod_key_t key;
+
+	memset(&key, 0, sizeof(key));
 	key.amod = mod;
 	key.is_old = 0;
 	m = apr_hash_get(self->modules, &key, sizeof(key));
@@ -323,6 +334,7 @@ apr_uint32_t code_base_mod_index(code_base_t *self, term_t amod, int is_old)
 	module_t *m;
 	struct mod_key_t key;
 
+	memset(&key, 0, sizeof(key));
 	key.amod = amod;
 	key.is_old = is_old;
 	m = apr_hash_get(self->modules, &key, sizeof(key));
@@ -354,6 +366,7 @@ int code_base_delete(code_base_t *self, term_t amod)
 	module_t *m;
 	struct mod_key_t mod_key;
 	
+	memset(&mod_key, 0, sizeof(mod_key));
 	mod_key.amod = amod;
 	mod_key.is_old = 1;
 	m = apr_hash_get(self->modules, &mod_key, sizeof(mod_key));

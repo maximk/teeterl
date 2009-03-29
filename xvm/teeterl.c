@@ -76,6 +76,7 @@ apr_status_t teeterl_init()
 
 		mp++;
 	}
+	
 	return APR_SUCCESS;
 }
 

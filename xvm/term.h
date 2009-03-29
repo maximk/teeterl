@@ -145,15 +145,15 @@ typedef apr_uint64_t celem_t;
 #define int_value(t)	((int)(t) >> TAG_INT_SIZE)
 #define bn_value(t)		((bignum_t *)PTR(t))
 
-#if APR_SIZEOF_VOIDP == 4
+//#if APR_SIZEOF_VOIDP == 4
 #define MAX_UINT_VALUE	((1 << (32 - TAG_INT_SIZE))-1)
 #define MAX_INT_VALUE	((1 << (32 - TAG_INT_SIZE - 1))-1)
 #define MIN_INT_VALUE	((-1 << (32 - TAG_INT_SIZE - 1)))
-#else
-#define MAX_UINT_VALUE	((1l << (64 - TAG_INT_SIZE))-1)
-#define MAX_INT_VALUE	((1l << (64 - TAG_INT_SIZE - 1))-1)
-#define MIN_INT_VALUE	((1l << (64 - TAG_INT_SIZE - 1)))
-#endif
+//#else
+//#define MAX_UINT_VALUE	((1l << (64 - TAG_INT_SIZE))-1)
+//#define MAX_INT_VALUE	((1l << (64 - TAG_INT_SIZE - 1))-1)
+//#define MIN_INT_VALUE	((1l << (64 - TAG_INT_SIZE - 1)))
+//#endif
 
 #define bool(ok) ((ok)? A_TRUE: A_FALSE)
 

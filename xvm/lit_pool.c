@@ -41,7 +41,7 @@ struct lit_pool_t {
 lit_pool_t *lit_pool_make(apr_pool_t *p)
 {
 	lit_pool_t *lp = apr_palloc(p, sizeof(*lp));
-	lp->terms = apr_array_make(p, 256, 4);
+	lp->terms = apr_array_make(p, 256, sizeof(term_t));
 	lp->xp = xpool_make(p);
 	return lp;
 }
