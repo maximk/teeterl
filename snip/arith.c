@@ -13,9 +13,9 @@
 	}
 	else // two ints
 	{
-		int r = int_value(a) + i;
+		int_value_t r = int_value(a) + i;
 		if (r > MAX_INT_VALUE || r < MIN_INT_VALUE)
-			push(bignum(bignum_from32(r, proc->gc_cur)));
+			push(bignum(bignum_from_int_value(r, proc->gc_cur)));
 		else
 			push(intnum(r));
 	}
@@ -35,9 +35,9 @@
 	}
 	else // two ints
 	{
-		int r = int_value(a) - i;
+		int_value_t r = int_value(a) - i;
 		if (r > MAX_INT_VALUE || r < MIN_INT_VALUE)
-			push(bignum(bignum_from32(r, proc->gc_cur)));
+			push(bignum(bignum_from_int_value(r, proc->gc_cur)));
 		else
 			push(intnum(r));
 	}
@@ -73,18 +73,18 @@
 	{
 		bignum_t *r;
 		if (is_int(a))
-			r = bignum_add1(bn_value(b), int_value(a), proc->gc_cur);
+			r = bignum_add2(bn_value(b), int_value(a), proc->gc_cur);
 		else if (is_int(b))
-			r = bignum_add1(bn_value(a), int_value(b), proc->gc_cur);
+			r = bignum_add2(bn_value(a), int_value(b), proc->gc_cur);
 		else
 			r = bignum_add(bn_value(a), bn_value(b), proc->gc_cur);
 		push(bignum_to_term(r, proc->gc_cur));
 	}
 	else // two ints
 	{
-		int r = int_value(a) + int_value(b);
+		int_value_t r = int_value(a) + int_value(b);
 		if (r > MAX_INT_VALUE || r < MIN_INT_VALUE)
-			push(bignum(bignum_from32(r, proc->gc_cur)));
+			push(bignum(bignum_from_int_value(r, proc->gc_cur)));
 		else
 			push(intnum(r));
 	}
@@ -121,20 +121,20 @@
 		bignum_t *r;
 		if (is_int(a))
 		{
-			r = bignum_add1(bn_value(b), -int_value(a), proc->gc_cur);
+			r = bignum_add2(bn_value(b), -int_value(a), proc->gc_cur);
 			bn_negate(r);
 		}
 		else if (is_int(b))
-			r = bignum_add1(bn_value(a), -int_value(b), proc->gc_cur);
+			r = bignum_add2(bn_value(a), -int_value(b), proc->gc_cur);
 		else
 			r = bignum_sub(bn_value(a), bn_value(b), proc->gc_cur);
 		push(bignum_to_term(r, proc->gc_cur));
 	}
 	else // two ints
 	{
-		int r = int_value(a) - int_value(b);
+		int_value_t r = int_value(a) - int_value(b);
 		if (r > MAX_INT_VALUE || r < MIN_INT_VALUE)
-			push(bignum(bignum_from32(r, proc->gc_cur)));
+			push(bignum(bignum_from_int_value(r, proc->gc_cur)));
 		else
 			push(intnum(r));
 	}
@@ -163,11 +163,11 @@
 	{
 		bignum_t *b1, *b2, *b3;
 		if (is_int(a))
-			b1 = bignum_from32(int_value(a), proc->gc_cur);
+			b1 = bignum_from_int_value(int_value(a), proc->gc_cur);
 		else
 			b1 = bn_value(a);
 		if (is_int(b))
-			b2 = bignum_from32(int_value(b), proc->gc_cur);
+			b2 = bignum_from_int_value(int_value(b), proc->gc_cur);
 		else
 			b2 = bn_value(b);
 		b3 = bignum_or(b1, b2, proc->gc_cur);
@@ -199,11 +199,11 @@
 	{
 		bignum_t *b1, *b2, *b3;
 		if (is_int(a))
-			b1 = bignum_from32(int_value(a), proc->gc_cur);
+			b1 = bignum_from_int_value(int_value(a), proc->gc_cur);
 		else
 			b1 = bn_value(a);
 		if (is_int(b))
-			b2 = bignum_from32(int_value(b), proc->gc_cur);
+			b2 = bignum_from_int_value(int_value(b), proc->gc_cur);
 		else
 			b2 = bn_value(b);
 		b3 = bignum_xor(b1, b2, proc->gc_cur);
@@ -223,7 +223,7 @@
 	if (!is_int(b))
 		bad_arg();
 
-	shifts = int_value(b);
+	shifts = int_value2(b);
 
 	if (is_bignum(a) || shifts > 0)
 	{
@@ -235,7 +235,7 @@
 		if (is_bignum(a))
 			b1 = bn_value(a);
 		else
-			b1 = bignum_from32(int_value(a), proc->gc_cur);
+			b1 = bignum_from_int_value(int_value(a), proc->gc_cur);
 
 		b2 = bignum_bsl(b1, shifts, proc->gc_cur);
 		r = bignum_to_term(b2, proc->gc_cur);
@@ -263,7 +263,7 @@
 	if (!is_int(b))
 		bad_arg();
 
-	shifts = int_value(b);
+	shifts = int_value2(b);
 
 	if (is_bignum(a) || shifts < 0)
 	{
@@ -275,7 +275,7 @@
 		if (is_bignum(a))
 			b1 = bn_value(a);
 		else
-			b1 = bignum_from32(int_value(a), proc->gc_cur);
+			b1 = bignum_from_int_value(int_value(a), proc->gc_cur);
 
 		b2 = bignum_bsr(b1, shifts, proc->gc_cur);
 		r = bignum_to_term(b2, proc->gc_cur);
@@ -323,25 +323,25 @@
 		bignum_t *r;
 		if (is_int(a))
 		{
-			apr_int32_t v = int_value(a);
+			int_value_t v = int_value(a);
 			if (v < 0)
 			{
-				r = bignum_mult1(bn_value(b), -v, proc->gc_cur);
+				r = bignum_mult2(bn_value(b), -v, proc->gc_cur);
 				bn_negate(r);
 			}
 			else
-				r = bignum_mult1(bn_value(b), v, proc->gc_cur);
+				r = bignum_mult2(bn_value(b), v, proc->gc_cur);
 		}
 		else if (is_int(b))
 		{
-			apr_int32_t v = int_value(b);
+			int_value_t v = int_value(b);
 			if (v < 0)
 			{
-				r = bignum_mult1(bn_value(a), -v, proc->gc_cur);
+				r = bignum_mult2(bn_value(a), -v, proc->gc_cur);
 				bn_negate(r);
 			}
 			else
-				r = bignum_mult1(bn_value(a), v, proc->gc_cur);
+				r = bignum_mult2(bn_value(a), v, proc->gc_cur);
 		}
 		else
 			r = bignum_mult(bn_value(a), bn_value(b), proc->gc_cur);
@@ -349,6 +349,7 @@
 	}
 	else // two ints
 	{
+		//XXX
 		apr_int64_t r = (apr_int64_t)int_value(a) * int_value(b);
 		if (r <= MAX_INT_VALUE && r >= MIN_INT_VALUE)
 			push(intnum(r));

@@ -60,7 +60,7 @@ term_t bif_keymember3(term_t Key, term_t N, term_t TupleList, process_t *ctx)	//
 	int n;
 	if (!is_int(N) || !is_list(TupleList))
 		return A_BADARG;
-	n = int_value(N);
+	n = int_value2(N);
 	if (n <= 0)
 		return A_BADARG;
 	while (TupleList != nil)
@@ -70,7 +70,7 @@ term_t bif_keymember3(term_t Key, term_t N, term_t TupleList, process_t *ctx)	//
 		TupleList = lst_next(TupleList);
 		if (!is_tuple(row))
 			continue;
-		size = int_value(tup_size(row));
+		size = int_value2(tup_size(row));
 		if (n > size)
 			continue;
 		if (terms_are_equal(Key, tup_elts(row)[n-1], 0))
@@ -99,7 +99,7 @@ term_t bif_keysearch3(term_t Key, term_t N, term_t TupleList, process_t *ctx)	//
 	int n;
 	if (!is_int(N) || !is_list(TupleList))
 		return A_BADARG;
-	n = int_value(N);
+	n = int_value2(N);
 	if (n <= 0)
 		return A_BADARG;
 	while (TupleList != nil)
@@ -109,7 +109,7 @@ term_t bif_keysearch3(term_t Key, term_t N, term_t TupleList, process_t *ctx)	//
 		TupleList = lst_next(TupleList);
 		if (!is_tuple(row))
 			continue;
-		size = int_value(tup_size(row));
+		size = int_value2(tup_size(row));
 		if (n > size)
 			continue;
 		if (terms_are_equal(Key, tup_elts(row)[n-1], 0))

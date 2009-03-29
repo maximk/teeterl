@@ -157,8 +157,8 @@ term_t bif_fun_info2(term_t Fun, term_t What, process_t *ctx)
 	else if (What == A_ARITY)
 	{
 		//TODO: report arity without free vars
-		int n = int_value(fun_arity(Fun));
-		int nfree = int_value(tup_size(fun_fridge(Fun)));
+		int n = int_value2(fun_arity(Fun));
+		int nfree = int_value2(tup_size(fun_fridge(Fun)));
 	
 		r = make_tuple2(A_ARITY, intnum(n-nfree), proc_gc_pool(ctx));
 	}
@@ -172,7 +172,7 @@ term_t bif_fun_info2(term_t Fun, term_t What, process_t *ctx)
 		term_t cons = nil;
 		int i, n;
 
-		n = int_value(tup_size(fridge));
+		n = int_value2(tup_size(fridge));
 		for (i = 0; i < n; i++)
 			lst_add(f, cons, tup_elts(fridge)[i], proc_gc_pool(ctx));
 
@@ -200,7 +200,7 @@ term_t bif_bit_size1(term_t Bin, process_t *ctx)
 {
 	if (!is_binary(Bin))
 		return A_BADARG;
-	//TODO: likely to overflow
+	//TODO: may overflow, one day
 	result(intnum(int_value(bin_size(Bin))*8));
 	return AI_OK;
 }
@@ -210,8 +210,8 @@ term_t bif_element2(term_t N, term_t Tuple, process_t *ctx)
 	int i;
 	if (!is_int(N) || !is_tuple(Tuple))
 		return A_BADARG;
-	i = int_value(N);
-	if (i <= 0 || i > int_value(tup_size(Tuple)))
+	i = int_value2(N);
+	if (i <= 0 || i > int_value2(tup_size(Tuple)))
 		return A_BADARG;
 	
 	result(tup_elts(Tuple)[i-1]);
@@ -224,8 +224,8 @@ term_t bif_setelement3(term_t N, term_t Tuple, term_t Value, process_t *ctx)
 	int i, j, arity;
 	if (!is_int(N) || !is_tuple(Tuple))
 		return A_BADARG;
-	i = int_value(N);
-	arity = int_value(tup_size(Tuple));
+	i = int_value2(N);
+	arity = int_value2(tup_size(Tuple));
 	if (i <= 0 || i > arity)
 		return A_BADARG;
 	
@@ -334,7 +334,7 @@ term_t bif_list_to_atom1(term_t List, process_t *ctx)
 		int ch;
 		if (!is_int(v))
 			return A_BADARG;
-		ch = int_value(v);
+		ch = int_value2(v);
 		if (ch < 0 || ch > 255)
 			return A_BADARG;
 		print_name->data[i] = ch;
@@ -352,8 +352,8 @@ term_t bif_split_binary2(term_t Bin, term_t Index, process_t *ctx)
 	term_t bin1, bin2;
 	if (!is_binary(Bin) || !is_int(Index))
 		return A_BADARG;
-	k = int_value(Index);
-	size = int_value(bin_size(Bin));
+	k = int_value2(Index);
+	size = int_value2(bin_size(Bin));
 	if (k < 0 || k > size)
 		return A_BADARG;
 
@@ -372,7 +372,7 @@ term_t bif_binary_to_term1(term_t Bin, process_t *ctx)
 	if (!is_binary(Bin))
 		return A_BADARG;
 	cache = atom_cache_make(proc_gc_pool(ctx));
-	size = int_value(bin_size(Bin));
+	size = int_value2(bin_size(Bin));
 	t = unpack_term(bin_data(Bin), size, cache, proc_atoms(ctx), proc_gc_pool(ctx));
 	if (t == AI_UNDEFINED)
 		return A_BADARG;
@@ -407,9 +407,9 @@ term_t bif_binary_to_list3(term_t Bin, term_t BegInd, term_t EndInd, process_t *
 	if (!is_int(BegInd) || !is_int(EndInd))
 		return A_BADARG;
 
-	beg = int_value(BegInd);
-	end = int_value(EndInd);
-	size = int_value(bin_size(Bin));
+	beg = int_value2(BegInd);
+	end = int_value2(EndInd);
+	size = int_value2(bin_size(Bin));
 	data = bin_data(Bin);
 
 	if (beg < 1 || end > size || end < beg)
@@ -437,7 +437,7 @@ int iolist_len(term_t list, int len)
 		}
 		else if (is_binary(v))
 		{
-			len += int_value(bin_size(v));
+			len += int_value2(bin_size(v));
 		}
 		else if (is_list(v))
 		{
@@ -462,10 +462,10 @@ apr_byte_t *flatten_iolist(term_t list, apr_byte_t *data)
 	{
 		term_t v = lst_value(list);
 		if (is_int(v))
-			*data++ = int_value(v);
+			*data++ = (apr_byte_t)int_value(v);
 		else if (is_binary(v))
 		{
-			int size = int_value(bin_size(v));
+			int size = int_value2(bin_size(v));
 			memcpy(data, bin_data(v), size);
 			data += size;
 		}
@@ -512,7 +512,7 @@ term_t bif_tuple_to_list1(term_t Tuple, process_t *ctx)
 	if (!is_tuple(Tuple))
 		return A_BADARG;
 
-	for (i = 0; i < int_value(tup_size(Tuple)); i++)
+	for (i = 0; i < int_value2(tup_size(Tuple)); i++)
 		lst_add(r, cons, tup_elts(Tuple)[i], proc_gc_pool(ctx));
 
 	result(r);
@@ -614,7 +614,7 @@ term_t bif_make_tuple2(term_t N, term_t InitValue, process_t *ctx)
 	int i, arity;
 	if (!is_int(N))
 		return A_BADARG;
-	arity = int_value(N);
+	arity = int_value2(N);
 	if (arity < 0)
 		return A_BADARG;
 	t = make_tuple(arity, proc_gc_pool(ctx));
@@ -632,7 +632,7 @@ term_t bif_append_element2(term_t Tuple, term_t Elem, process_t *ctx)
 	if (!is_tuple(Tuple))
 		return A_BADARG;
 
-	n = int_value(tup_size(Tuple));
+	n = int_value2(tup_size(Tuple));
 	t = make_tuple(n+1, proc_gc_pool(ctx));
 
 	for (i = 0; i < n; i++)
@@ -669,7 +669,11 @@ term_t bif_phash2(term_t Term, term_t Range, process_t *ctx)
 	if (!is_int(Range) && !is_bignum(Range))
 		return A_BADARG;
 	if (is_int(Range))
-		rng = int_value(Range);
+	{
+		if (int_value(Range) > 0xffffffffl)
+			return A_BADARG;
+		rng = (apr_uint32_t)int_value(Range);
+	}
 	else
 	{
 		bignum_t *bn = bn_value(Range);

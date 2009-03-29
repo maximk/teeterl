@@ -41,12 +41,14 @@
 #if APR_SIZEOF_VOIDP == 4
 
 typedef apr_uint32_t term_t;
-typedef apr_uint32_t celem_t;	// "code element", for *ip, etc
+typedef apr_uint32_t celem_t;		// "code element", for *ip, etc
+typedef apr_int32_t int_value_t;	// returned by int_value()
 
 #else
 
 typedef apr_uint64_t term_t;
 typedef apr_uint64_t celem_t;
+typedef apr_int64_t int_value_t;
 
 #endif
 
@@ -141,19 +143,23 @@ typedef apr_uint64_t celem_t;
 #define prp_serial(t)		(((prp_t *)PTR(t))->e_serial & ~ETAG_MASK)
 #define prp_creation(t)		(((prp_t *)PTR(t))->creation)
 
+//	int_value() and int_value2() are equivalent on 32-bit systems
+//	for 64-bits, int_value returns int_value_t, int_value2 returns int
+
 #define dbl_value(t)	(((float_nest_t *)PTR(t))->value)
-#define int_value(t)	((int)(t) >> TAG_INT_SIZE)
+#define int_value(t)	((int_value_t)(t) >> TAG_INT_SIZE)
+#define int_value2(t)	((int)(t) >> TAG_INT_SIZE)	
 #define bn_value(t)		((bignum_t *)PTR(t))
 
-//#if APR_SIZEOF_VOIDP == 4
+#if APR_SIZEOF_VOIDP == 4
 #define MAX_UINT_VALUE	((1 << (32 - TAG_INT_SIZE))-1)
 #define MAX_INT_VALUE	((1 << (32 - TAG_INT_SIZE - 1))-1)
 #define MIN_INT_VALUE	((-1 << (32 - TAG_INT_SIZE - 1)))
-//#else
-//#define MAX_UINT_VALUE	((1l << (64 - TAG_INT_SIZE))-1)
-//#define MAX_INT_VALUE	((1l << (64 - TAG_INT_SIZE - 1))-1)
-//#define MIN_INT_VALUE	((1l << (64 - TAG_INT_SIZE - 1)))
-//#endif
+#else
+#define MAX_UINT_VALUE	((1l << (64 - TAG_INT_SIZE))-1)
+#define MAX_INT_VALUE	((1l << (64 - TAG_INT_SIZE - 1))-1)
+#define MIN_INT_VALUE	((1l << (64 - TAG_INT_SIZE - 1)))
+#endif
 
 #define bool(ok) ((ok)? A_TRUE: A_FALSE)
 

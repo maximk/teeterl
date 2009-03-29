@@ -48,12 +48,12 @@ term_t bif_md5_init0(process_t *ctx)
 
 term_t bif_md5_update2(term_t Data, term_t Context, process_t *ctx)
 {
-	apr_uint32_t size;
+	apr_size_t size;
 	if (!is_binary(Data) || !is_binary(Context))
 		return A_BADARG;
-	if (int_value(bin_size(Context)) != sizeof(md5_ctx_t))
+	if (int_value2(bin_size(Context)) != sizeof(md5_ctx_t))
 		return A_BADARG;
-	size = int_value(bin_size(Data));
+	size = (apr_size_t)int_value(bin_size(Data));
 	md5_update((md5_ctx_t *)bin_data(Context), bin_data(Data), size);
 	result(A_OK);
 	return AI_OK;
@@ -63,7 +63,7 @@ term_t bif_md5_final1(term_t Context, process_t *ctx)
 {
 	apr_byte_t *data;
 	if (!is_binary(Context) ||
-			int_value(bin_size(Context)) != sizeof(md5_ctx_t))
+			int_value2(bin_size(Context)) != sizeof(md5_ctx_t))
 		return A_BADARG;
 	data = xalloc(proc_gc_pool(ctx), 16);
 	md5_final(data, (md5_ctx_t *)bin_data(Context));
@@ -76,7 +76,7 @@ term_t bif_md5_1(term_t Data, process_t *ctx)
 	apr_byte_t *digest = xalloc(proc_gc_pool(ctx), MD5_DIGESTSIZE);
 	if (!is_binary(Data))
 		return A_BADARG;
-	md5(digest, bin_data(Data), int_value(bin_size(Data)));
+	md5(digest, bin_data(Data), (apr_size_t)int_value(bin_size(Data)));
 	result(make_binary(intnum(MD5_DIGESTSIZE), digest, proc_gc_pool(ctx)));
 	return AI_OK;
 }
@@ -97,12 +97,12 @@ term_t bif_sha1_init0(process_t *ctx)
 
 term_t bif_sha1_update2(term_t Data, term_t Context, process_t *ctx)
 {
-	apr_uint32_t size;
+	apr_size_t size;
 	if (!is_binary(Data) || !is_binary(Context))
 		return A_BADARG;
-	if (int_value(bin_size(Context)) != sizeof(sha1_ctx_t))
+	if (int_value2(bin_size(Context)) != sizeof(sha1_ctx_t))
 		return A_BADARG;
-	size = int_value(bin_size(Data));
+	size = (apr_size_t)int_value(bin_size(Data));
 	sha1_update((sha1_ctx_t *)bin_data(Context), bin_data(Data), size);
 	result(A_OK);
 	return AI_OK;
@@ -112,7 +112,7 @@ term_t bif_sha1_final1(term_t Context, process_t *ctx)
 {
 	apr_byte_t *data;
 	if (!is_binary(Context) ||
-			int_value(bin_size(Context)) != sizeof(sha1_ctx_t))
+			int_value2(bin_size(Context)) != sizeof(sha1_ctx_t))
 		return A_BADARG;
 	data = xalloc(proc_gc_pool(ctx), 16);
 	sha1_final(data, (sha1_ctx_t *)bin_data(Context));
@@ -125,7 +125,7 @@ term_t bif_sha1_1(term_t Data, process_t *ctx)
 	apr_byte_t *digest = xalloc(proc_gc_pool(ctx), SHA1_DIGESTSIZE);
 	if (!is_binary(Data))
 		return A_BADARG;
-	sha1(digest, bin_data(Data), int_value(bin_size(Data)));
+	sha1(digest, bin_data(Data), (apr_size_t)int_value(bin_size(Data)));
 	result(make_binary(intnum(SHA1_DIGESTSIZE), digest, proc_gc_pool(ctx)));
 	return AI_OK;
 }
@@ -140,7 +140,7 @@ term_t bif_rc4_init1(term_t Key, process_t *ctx)
 	if (!is_binary(Key))
 		return A_BADARG;
 	s = xalloc(proc_gc_pool(ctx), 256+2);	//2 for i and j
-	key_len = int_value(bin_size(Key));
+	key_len = (apr_byte_t)int_value(bin_size(Key));
 	key_data = bin_data(Key);
 
 	i = 0;
@@ -176,7 +176,7 @@ term_t bif_rc4_update2(term_t Text, term_t Opaque, process_t *ctx)
 	if (!is_binary(Text) || !is_binary(Opaque) || bin_size(Opaque) != intnum(256+2))
 		return A_BADARG;
 
-	text_size = int_value(bin_size(Text));
+	text_size = int_value2(bin_size(Text));
 	text_data = xalloc(proc_gc_pool(ctx), text_size);
 	memcpy(text_data, bin_data(Text), text_size);
 	

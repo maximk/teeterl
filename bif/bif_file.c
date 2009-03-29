@@ -43,7 +43,7 @@ term_t bif_open0_3(term_t FileName, term_t Mode, term_t Perms, process_t *ctx)
 		return A_BADARG;
 
 	apr_pool_create(&p, 0);
-	rs = apr_file_open(&file, (char *)bin_data(FileName), int_value(Mode), int_value(Perms), p);
+	rs = apr_file_open(&file, (char *)bin_data(FileName), (apr_uint32_t)int_value(Mode), (apr_uint32_t)int_value(Perms), p);
 	if (rs != 0)
 	{
 		apr_pool_destroy(p);
@@ -75,7 +75,7 @@ term_t bif_read0_2(term_t Port, term_t Len, process_t *ctx)
 	p = port_lookup(prp_serial(Port));
 	if (p == 0)
 		return A_BADARG;
-	size = int_value(Len);
+	size = (apr_size_t)int_value(Len);
 	buf = xalloc(proc_gc_pool(ctx), size);
 	rs = p->read(p, buf, &size);
 	if (size == 0 && APR_STATUS_IS_EOF(rs))
@@ -100,7 +100,7 @@ term_t bif_write0_2(term_t Port, term_t Bin, process_t *ctx)
 	p = port_lookup(prp_serial(Port));
 	if (p == 0)
 		return A_BADARG;
-	size = int_value(bin_size(Bin));
+	size = (apr_size_t)int_value(bin_size(Bin));
 	rs = p->write(p, bin_data(Bin), &size);
 	if (rs != 0)
 		return decipher_status(rs); //TODO: something may still be written

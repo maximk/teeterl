@@ -141,9 +141,9 @@ term_t bif_spawn0_1(term_t F, process_t *ctx)
 		return A_BADARG;
 
 	fridge = fun_fridge(F);
-	nfree = int_value(tup_size(fridge));
+	nfree = int_value2(tup_size(fridge));
 
-	if (int_value(fun_arity(F)) != nfree)
+	if (int_value2(fun_arity(F)) != nfree)
 		return A_BADARG;
 
 	for (i = 0; i < nfree; i++)
@@ -168,7 +168,7 @@ term_t bif_run_slice2(term_t Pid, term_t Reductions, process_t *ctx)
 	if (!is_pid(Pid) || !is_int(Reductions))
 		return A_BADARG;
 	proc = proc_lookup(pid_serial(Pid));
-	res = proc_main(proc, int_value(Reductions), &retval);
+	res = proc_main(proc, int_value2(Reductions), &retval);
 
 	if (res == AI_DONE)
 	{
@@ -319,7 +319,7 @@ term_t bif_set_brk0_2(term_t Mod, term_t Off, process_t *ctx)
 	else
 	{
 		if (code_base_breakpoint_set(proc_code_base(ctx),
-			mod_index, int_value(Off)))
+			mod_index, int_value2(Off)))
 		  result(A_TRUE);
 		else
 		  result(A_FALSE);
@@ -341,7 +341,7 @@ term_t bif_unset_brk0_2(term_t Mod, term_t Off, process_t *ctx)
 	else
 	{
 		if (code_base_breakpoint_unset(proc_code_base(ctx),
-			mod_index, int_value(Off)))
+			mod_index, int_value2(Off)))
 		  result(A_TRUE);
 		else
 		  result(A_FALSE);
@@ -363,7 +363,7 @@ term_t bif_toggle_brk0_2(term_t Mod, term_t Off, process_t *ctx)
 	else
 	{
 		switch (code_base_breakpoint_toggle(proc_code_base(ctx),
-			mod_index, int_value(Off)))
+			mod_index, int_value2(Off)))
 		{
 		case -1:
 		  result(A_ERROR);

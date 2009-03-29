@@ -44,7 +44,7 @@ static int write_one(term_t A)
 {
 	if (is_int(A))
 	{
-		apr_byte_t ch = int_value(A);
+		apr_byte_t ch = (apr_byte_t)int_value(A);
 		fwrite(&ch, 1, 1, stdout);
 	}
 	else if (is_cons(A))
@@ -63,7 +63,7 @@ static int write_one(term_t A)
 	else if (is_binary(A))
 	{
 		apr_byte_t *data = bin_data(A);
-		int size = int_value(bin_size(A));
+		int size = int_value2(bin_size(A));
 		fwrite(data, 1, size, stdout);
 	}
 	else

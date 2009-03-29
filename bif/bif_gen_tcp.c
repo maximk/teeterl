@@ -75,8 +75,8 @@ term_t bif_connect_socket4(term_t RemIP, term_t RemPort, term_t LocIP, term_t Lo
 
 	host1 = (const char *)bin_data(RemIP);
 	host2 = (LocIP == A_ANY) ?0 :(const char *)bin_data(LocIP);
-	port1 = int_value(RemPort);
-	port2 = int_value(LocPort);
+	port1 = (apr_port_t)int_value(RemPort);
+	port2 = (apr_port_t)int_value(LocPort);
 
 	apr_pool_create(&p, 0);
 
@@ -132,7 +132,7 @@ term_t bif_listen_socket2(term_t LocIP, term_t LocPort, process_t *ctx)
 		return A_BADARG;
 
 	host = (LocIP == A_ANY) ?0 :(const char *)bin_data(LocIP);
-	tcp_port = int_value(LocPort);
+	tcp_port = (apr_port_t)int_value(LocPort);
 
 	apr_pool_create(&p, 0);
 

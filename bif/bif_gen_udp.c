@@ -50,7 +50,7 @@ term_t bif_open_socket2(term_t LocIP, term_t LocPort, process_t *ctx)
 		return A_BADARG;
 
 	host = (LocIP == A_ANY) ?0 :(const char *)bin_data(LocIP);
-	udp_port = int_value(LocPort);
+	udp_port = (apr_port_t)int_value(LocPort);
 
 	apr_pool_create(&p, 0);
 
@@ -107,13 +107,13 @@ term_t bif_sendto4(term_t Sock, term_t RemIP, term_t RemPort, term_t Bin, proces
 	sock = port->get_socket(port);
 
 	host = (const char *)bin_data(RemIP);
-	udp_port = int_value(RemPort);
+	udp_port = (apr_port_t)int_value(RemPort);
 
 	apr_pool_create(&p, 0);
 	rs = apr_sockaddr_info_get(&sa, host, APR_INET, udp_port, 0, p);
 	if (rs == 0)
 	{
-		apr_size_t len = int_value(bin_size(Bin));
+		apr_size_t len = (apr_size_t)int_value(bin_size(Bin));
 		rs = apr_socket_sendto(sock, sa, 0, (const char *)bin_data(Bin), &len);
 	}
 
