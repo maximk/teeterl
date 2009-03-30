@@ -148,7 +148,7 @@ typedef apr_int64_t int_value_t;
 
 #define dbl_value(t)	(((float_nest_t *)PTR(t))->value)
 #define int_value(t)	((int_value_t)(t) >> TAG_INT_SIZE)
-#define int_value2(t)	((int)(t) >> TAG_INT_SIZE)	
+#define int_value2(t)	((int)((t) >> TAG_INT_SIZE))
 #define bn_value(t)		((bignum_t *)PTR(t))
 
 #if APR_SIZEOF_VOIDP == 4
@@ -259,7 +259,7 @@ int lst_len(term_t list);
 // 110x xxxx ... REF
 // 111x xxxx ... PORT
 
-#define ETAG_MASK 0xe0000000
+#define ETAG_MASK	  0xe0000000
 
 #define ETAG_FLOAT	  0x20000000
 #define ETAG_BIGNUM	  0x40000000

@@ -262,7 +262,7 @@ static apr_status_t port_buffer_send(buffer_t *buf, term_t io)
 	}
 	else if (is_binary(io))
 	{
-		int size = int_value(bin_size(io));
+		int size = int_value2(bin_size(io));
 		if (size > avail)
 		{
 			buffer_put_data(buf, bin_data(io), avail);
@@ -311,7 +311,7 @@ apr_status_t port_socket_set_option(port_t *self, term_t opt, term_t value)
 	{
 		if (!is_int(value))
 			return APR_BADARG;
-		data->expected_size = int_value(value);
+		data->expected_size = int_value2(value);
 		if (data->expected_size < 0)
 			return APR_BADARG;
 
@@ -342,7 +342,7 @@ apr_status_t port_socket_set_option(port_t *self, term_t opt, term_t value)
 		int size;
 		if (!is_int(value))
 			return APR_BADARG;
-		size = int_value(value);
+		size = int_value2(value);
 		if (size < 0 || size > SOCK_OUTBUF_LEN)
 			return APR_BADARG;
 

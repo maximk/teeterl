@@ -64,7 +64,7 @@ static apr_uint32_t hash(term_t t, apr_uint32_t h, atoms_t *atoms)
 		return C3 * h + 1;
 	else if (is_binary(t))
 	{
-		int l = int_value(bin_size(t));
+		int l = int_value2(bin_size(t));
 		apr_byte_t *data = bin_data(t); 
 		int i;
 
@@ -94,7 +94,7 @@ static apr_uint32_t hash(term_t t, apr_uint32_t h, atoms_t *atoms)
 		return hash(lst_value(t), hash(lst_next(t), h, atoms), atoms);
 	else if (is_tuple(t))
 	{
-		int n = int_value(tup_size(t));
+		int n = int_value2(tup_size(t));
 		int i;
 		for (i = 0; i < n; i++)
 			h = hash(tup_elts(t)[i], h, atoms);

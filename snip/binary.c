@@ -19,12 +19,19 @@
 
 /// bin_add_i_b(int unit)
 	apr_byte_t buf[8];
-	apr_int32_t nbits;
+	int nbits;
 	term_t value;
 
-	nbits = int_value(pop());
+	nbits = int_value2(pop());
 	value = pop();
 	nbits *= unit;
+	
+	if (is_int(value))
+	{
+		int_value_t i = int_value(value);
+		if (i > 0x7fffffff || i < -0x80000000)
+			value = bignum(bignum_from_int_value(i, proc->gc_cur));
+	}
 
 	if (is_bignum(value))
 	{
@@ -95,6 +102,13 @@
 	nbits = int_value(pop());
 	value = pop();
 	nbits *= unit;
+
+	if (is_int(value))
+	{
+		int_value_t i = int_value(value);
+		if (i > 0x7fffffff || i < -0x80000000)
+			value = bignum(bignum_from_int_value(i, proc->gc_cur));
+	}
 
 	if (is_bignum(value))
 	{
@@ -221,16 +235,16 @@
 /// bin_add_b(int unit)
 	term_t size = pop();
 	term_t bin = pop();
-	apr_int32_t nbits;
+	int nbits;
 
 	if (size == A_ALL)
-		nbits = int_value(bin_size(bin))*8;
+		nbits = int_value2(bin_size(bin))*8;
 	else
 	{
-		nbits = int_value(size);
+		nbits = int_value2(size);
 		nbits *= unit;
 
-		if (nbits > int_value(bin_size(bin))*8)
+		if (nbits > int_value2(bin_size(bin))*8)
 			bad_arg();
 	}
 
@@ -241,7 +255,7 @@
 	proc->marker = 0;
 
 /// is_bin_consumed
-	push(bool(proc->marker == int_value(bin_size(proc->worm))*8));
+	push(bool(proc->marker == int_value2(bin_size(proc->worm))*8));
 	proc->worm = AI_UNDEFINED;
 
 /// bin_get_context
@@ -312,6 +326,16 @@
 			push(intnum(dig));
 		else
 			push(bignum(bignum_make(0, 1, &dig, proc->gc_cur)));
+	}
+	else if (first_non_zero == digits->nelts-2)
+	{
+		digit_t *digs = (digit_t *)digits->elts + first_non_zero;
+		apr_uint64_t v = ((apr_uint64_t)digs[0] << 32) + digs[1];
+		
+		if (v <= MAX_UINT_VALUE)
+			push(intnum(v));
+		else
+			push(bignum(bignum_make(0, 2, digs, proc->gc_cur)));		
 	}
 	else //use bignum
 	{
@@ -392,6 +416,16 @@
 		else
 			push(bignum(bignum_make(0, 1, &dig, proc->gc_cur)));
 	}
+	else if (first_non_zero == digits->nelts-2)
+	{
+		digit_t *digs = (digit_t *)digits->elts + first_non_zero;
+		apr_uint64_t v = ((apr_uint64_t)digs[0] << 32) + digs[1];
+		
+		if (v <= MAX_UINT_VALUE)
+			push(intnum(v));
+		else
+			push(bignum(bignum_make(0, 2, digs, proc->gc_cur)));		
+	}
 	else //use bignum
 	{
 		int n = digits->nelts - first_non_zero;
@@ -458,6 +492,16 @@
 		else
 			push(bignum(bignum_make(0, 1, &dig, proc->gc_cur)));
 	}
+	else if (first_non_zero == digits->nelts-2)
+	{
+		digit_t *digs = (digit_t *)digits->elts + first_non_zero;
+		apr_uint64_t v = ((apr_uint64_t)digs[0] << 32) + digs[1];
+		
+		if (v <= MAX_UINT_VALUE)
+			push(intnum(v));
+		else
+			push(bignum(bignum_make(0, 2, digs, proc->gc_cur)));		
+	}
 	else //use bignum
 	{
 		int n = digits->nelts - first_non_zero;
@@ -487,9 +531,9 @@
 	term_t t;
 	
 	if (size == A_ALL)
-		nbits = int_value(bin_size(proc->worm))*8 - proc->marker;
+		nbits = int_value2(bin_size(proc->worm))*8 - proc->marker;
 	else
-		nbits = int_value(size) * unit;
+		nbits = int_value2(size) * unit;
 
 	if (nbits % 8 != 0)
 		bad_arg();

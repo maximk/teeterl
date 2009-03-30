@@ -74,10 +74,12 @@ bignum_t *bignum_minus_one();
 // arithmetic
 bignum_t *bignum_add(const bignum_t *a, const bignum_t *b, xpool_t *xp);
 bignum_t *bignum_add1(const bignum_t *a, apr_int32_t v, xpool_t *xp);
+bignum_t *bignum_add2(const bignum_t *a, apr_int64_t v, xpool_t *xp);
 bignum_t *bignum_sub(const bignum_t *a, const bignum_t *b, xpool_t *xp);
 
 bignum_t *bignum_mult(const bignum_t *a, const bignum_t *b, xpool_t *xp);
 bignum_t *bignum_mult1(const bignum_t *a, digit_t b, xpool_t *xp);
+bignum_t *bignum_mult2(const bignum_t *a, apr_uint64_t v, xpool_t *xp);
 bignum_t *bignum_div(const bignum_t *a, const bignum_t *b, bignum_t **r, xpool_t *xp);
 bignum_t *bignum_div1(const bignum_t *a, digit_t b, digit_t *r, xpool_t *xp);
 

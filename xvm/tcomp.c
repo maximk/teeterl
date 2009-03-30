@@ -83,7 +83,7 @@ int terms_are_equal0(term_t a, term_t b, int exact)
 		int i;
 		if (tup_size(a) != tup_size(b))
 			return 0;
-		for (i = 0; i < int_value(tup_size(a)); i++)
+		for (i = 0; i < int_value2(tup_size(a)); i++)
 			if (terms_are_equal(tup_elts(a)[i], tup_elts(b)[i], exact) != 1)
 				return 0;
 		return 1;
@@ -93,7 +93,7 @@ int terms_are_equal0(term_t a, term_t b, int exact)
 		int d;
 		if (bin_size(a) != bin_size(b))
 			return 0;
-		d = memcmp(bin_data(a), bin_data(b), int_value(bin_size(a)));
+		d = memcmp(bin_data(a), bin_data(b), int_value2(bin_size(a)));
 		return d == 0;
 	}
 	else if (is_fun(a) && is_fun(b))
@@ -195,8 +195,8 @@ int terms_are_less(term_t a, term_t b, atoms_t *atoms)
 	else if (is_tuple(a) && is_tuple(b))
 	{
 		int i;
-		int na = int_value(tup_size(a));
-		int nb = int_value(tup_size(b));
+		int na = int_value2(tup_size(a));
+		int nb = int_value2(tup_size(b));
 		if (na < nb)
 			return 1;
 		if (na > nb)
@@ -242,8 +242,8 @@ int terms_are_less(term_t a, term_t b, atoms_t *atoms)
 	}
 	else if (is_binary(a) && is_binary(b))
 	{
-		int sa = int_value(bin_size(a));
-		int sb = int_value(bin_size(b));
+		int sa = int_value2(bin_size(a));
+		int sb = int_value2(bin_size(b));
 		if (sa < sb)
 			return 1;
 		if (sa > sb)

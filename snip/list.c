@@ -102,7 +102,7 @@
 /// unpack_tuple
 	term_t t = pop();
 	int i;
-	for (i = 0; i < int_value(tup_size(t)); i++)
+	for (i = 0; i < int_value2(tup_size(t)); i++)
 		push(tup_elts(t)[i]);
 
 /// tuple_elem(uint index)

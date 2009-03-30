@@ -427,7 +427,7 @@ term_t proc_trace_stack(process_t *self)
 	// however, it is known that the arity is less
 	// or equal to saved_ebp - cur_ebp - 3
 
-	saved_ebp = int_value(cstack(ebp-1));
+	saved_ebp = int_value2(cstack(ebp-1));
 
 	for (i = ebp-4; i >= saved_ebp; i--)
 	{
@@ -441,9 +441,9 @@ term_t proc_trace_stack(process_t *self)
 
 	while (1)
 	{
-		int ebp1 = int_value(cstack(ebp-1));
-		int offset = int_value(cstack(ebp-2));
-		int mod_index = int_value(cstack(ebp-3));
+		int ebp1 = int_value2(cstack(ebp-1));
+		int offset = int_value2(cstack(ebp-2));
+		int mod_index = int_value2(cstack(ebp-3));
 		term_t cons = nil;
 
 		if (mod_index == MOD_INDEX_NONE)
@@ -502,13 +502,13 @@ int proc_is_lingering(apr_uint32_t mod_index)
 		ebp = self->ebp;
 		while (1)
 		{
-			int return_mod_index = int_value(cstack(ebp-3));
+			int return_mod_index = int_value2(cstack(ebp-3));
 			if (return_mod_index == MOD_INDEX_NONE)
 				break;
 			if (return_mod_index == mod_index)
 				return 1;
 
-			ebp = int_value(cstack(ebp-1));
+			ebp = int_value2(cstack(ebp-1));
 		}
 	}
 
@@ -563,9 +563,26 @@ term_t bignum_to_term(bignum_t *a, xpool_t *xp)
 	if (bn_sign(a) == 0 && bn_size(a) == 1 && a->digits[0] <= MAX_INT_VALUE)
 		return intnum(a->digits[0]);
 	if (bn_sign(a) == 1 && bn_size(a) == 1 && a->digits[0] <= MAX_INT_VALUE+1)
-		return intnum(-((int)a->digits[0]));
+		return intnum(-(int_value_t)a->digits[0]);
+	if (bn_sign(a) == 0 && bn_size(a) == 2)
+	{
+		apr_uint64_t v = (apr_uint64_t)a->digits[0] << 32 + a->digits[1];
+		if (v <= MAX_INT_VALUE)
+			return intnum(v);
+	}
+	if (bn_sign(a) == 1 && bn_size(a) == 2)
+	{
+		apr_uint64_t v = (apr_uint64_t)a->digits[0] << 32 + a->digits[1];
+		if (v <= MAX_INT_VALUE+1)
+			return intnum(-(int_value_t)v);
+	}
 
 	return bignum(a);
+}
+
+bignum_t *bignum_from_int_value(int_value_t v, xpool_t *xp)
+{
+	return bignum_from64((apr_int64_t)v, xp);
 }
 
 #define push(t)		*(term_t *)apr_array_push(ds) = (t)

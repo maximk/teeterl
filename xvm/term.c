@@ -169,7 +169,7 @@ term_t make_tuple_elts(int nelts, term_t *elts, xpool_t *xp)
 term_t make_binary(term_t size, apr_byte_t *data, xpool_t *xp)
 {
 	binary_t *bp = xalloc(xp, sizeof(binary_t));
-	bp->e_size = int_value(size) | ETAG_BINARY;
+	bp->e_size = int_value2(size) | ETAG_BINARY;
 	bp->data = data;
 	return binary(bp);
 }
@@ -177,7 +177,7 @@ term_t make_binary(term_t size, apr_byte_t *data, xpool_t *xp)
 term_t make_fun(term_t fridge, term_t amod, term_t afun, term_t arity, xpool_t *xp)
 {
 	fun_t *fp = xalloc(xp, sizeof(fun_t));
-	fp->e_arity = int_value(arity) | ETAG_FUN;
+	fp->e_arity = int_value2(arity) | ETAG_FUN;
 	fp->fridge = fridge;
 	fp->amod = amod;
 	fp->afun = afun;
@@ -243,7 +243,7 @@ term_t pin_term(term_t t)
 	}
 	if (is_tuple(t))
 	{
-		int i, arity = int_value(tup_size(t));
+		int i, arity = int_value2(tup_size(t));
 		for (i = 0; i < arity; i++)
 			tup_elts(t)[i] = pin_term(tup_elts(t)[i]);
 	}
@@ -279,7 +279,7 @@ term_t marshal_term(term_t t, xpool_t *xp)
 	else if (is_tuple(t))
 	{
 		int i;
-		int n = int_value(tup_size(t));
+		int n = int_value2(tup_size(t));
 		term_t copy = make_tuple(n, xp);
 		for (i = 0; i < n; i++)
 			tup_elts(copy)[i] = marshal_term(tup_elts(t)[i], xp);
@@ -287,7 +287,7 @@ term_t marshal_term(term_t t, xpool_t *xp)
 	}
 	else if (is_binary(t))
 	{
-		int n = int_value(bin_size(t));
+		int n = int_value2(bin_size(t));
 		apr_byte_t *data = xalloc(xp, n);
 		memcpy(data, bin_data(t), n);
 		nt = make_binary(intnum(n), data, xp);
@@ -357,7 +357,7 @@ term_t gc_copy_term(term_t t, xpool_t *xp)
 	else if (is_tuple(t))
 	{
 		int i;
-		int n = int_value(tup_size(t));
+		int n = int_value2(tup_size(t));
 		term_t copy = make_tuple(n, xp);
 		for (i = 0; i < n; i++)
 			tup_elts(copy)[i] = gc_copy_term(tup_elts(t)[i], xp);
@@ -365,7 +365,7 @@ term_t gc_copy_term(term_t t, xpool_t *xp)
 	}
 	else if (is_binary(t))
 	{
-		int n = int_value(bin_size(t));
+		int n = int_value2(bin_size(t));
 		apr_byte_t *data = xalloc(xp, n);
 		memcpy(data, bin_data(t), n);
 		nt = make_binary(intnum(n), data, xp);
@@ -439,7 +439,7 @@ int printable_chars(term_t l)
 		int ch;
 		if (!is_int(v))
 			return 0;
-		ch = int_value(v);
+		ch = int_value2(v);
 		if (ch < 32 || ch > 255)
 			return 0;
 		//if (!apr_isprint(int_value(v)))
@@ -486,7 +486,7 @@ const char *stringify_term(term_t t, atoms_t *atoms, apr_pool_t *pool)
 	else if (is_tuple(t))
 	{
 		int i;
-		int n = int_value(tup_size(t));
+		int n = int_value2(tup_size(t));
 		apr_array_header_t *bits = apr_array_make(pool, 8, sizeof(char *));
 		*(char **)apr_array_push(bits) = "{";
 		for (i = 0; i < n; i++)
@@ -502,7 +502,7 @@ const char *stringify_term(term_t t, atoms_t *atoms, apr_pool_t *pool)
 	else if (is_binary(t))
 	{
 		int i;
-		int n = int_value(bin_size(t));
+		int n = int_value2(bin_size(t));
 		apr_array_header_t *bits = apr_array_make(pool, 8, sizeof(char *));
 		*(char **)apr_array_push(bits) = "<<";
 		if (printable_chars2(bin_data(t), n) && n >= 3)

@@ -204,6 +204,17 @@ bignum_t *bignum_add1(const bignum_t *a, apr_int32_t v, xpool_t *xp)
 	return bignum_add(a, (const bignum_t *)value, xp);
 }
 
+bignum_t *bignum_add2(const bignum_t *a, apr_int64_t v, xpool_t *xp)
+{
+	if (v <= 0x7fffffff && v > -0x80000000)
+		return bignum_add1(a, (apr_int32_t)v, xp);
+	else
+	{
+		bignum_t *b = bignum_from64(v, xp);
+		return bignum_add(a, (const bignum_t *)b, xp);
+	}
+}
+
 bignum_t *bignum_sub(const bignum_t *a, const bignum_t *b, xpool_t *xp)
 {
 	bignum_t *s;
@@ -292,6 +303,17 @@ bignum_t *bignum_mult1(const bignum_t *a, digit_t b, xpool_t *xp)
 	}
 	else
 		return bignum_make(sign, bn_size(a), p, xp);
+}
+
+bignum_t *bignum_mult2(const bignum_t *a, apr_uint64_t v, xpool_t *xp)
+{
+	if (v <= 0xffffffff)
+		return bignum_mult1(a, (digit_t)v, xp);
+	else
+	{
+		bignum_t *b = bignum_from64(v, xp);
+		return bignum_mult(a, (const bignum_t *)b, xp);
+	}
 }
 
 bignum_t *bignum_div(const bignum_t *a, const bignum_t *b, bignum_t **r, xpool_t *xp)

@@ -109,7 +109,7 @@ static void pack(apr_array_header_t *pad, term_t t, atom_cache_t *cache, atoms_t
 {
 	if (is_int(t))
 	{
-		int v = int_value(t);
+		int v = int_value2(t);
 		if (v >= 0 && v <= 255)
 		{
 			put(EXTERM_BYTE);
@@ -211,7 +211,7 @@ static void pack(apr_array_header_t *pad, term_t t, atom_cache_t *cache, atoms_t
 	}
 	else if (is_tuple(t))
 	{
-		int size = int_value(tup_size(t));
+		int size = int_value2(tup_size(t));
 		if (size < 256)
 		{
 			int i;
@@ -245,7 +245,7 @@ static void pack(apr_array_header_t *pad, term_t t, atom_cache_t *cache, atoms_t
 					print_only = 0;
 				else
 				{
-					int i = int_value(v);
+					int i = int_value2(v);
 					if (i < 0 || i > 255)
 						print_only = 0;
 				}
@@ -281,7 +281,7 @@ static void pack(apr_array_header_t *pad, term_t t, atom_cache_t *cache, atoms_t
 	}
 	else if (is_binary(t))
 	{
-		int n = int_value(bin_size(t));
+		int n = int_value2(bin_size(t));
 		put(EXTERM_BINARY);
 		put32(n);
 		put_data(bin_data(t), n);

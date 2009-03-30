@@ -192,7 +192,7 @@ apr_status_t port_udp_set_option(port_t *self, term_t opt, term_t value)
 	{
 		if (!is_int(value))
 			return APR_BADARG;
-		data->expected_size = int_value(value);	//ignored
+		data->expected_size = int_value2(value);	//ignored
 
 		if (!is_pid(self->owner_in))
 			return APR_ENOPROC;

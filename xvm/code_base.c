@@ -251,7 +251,7 @@ int code_base_load(code_base_t *self,
 			}
 			else if (selector == A_OFF && is_int(w))
 			{
-				int off = int_value(w);
+				int off = int_value2(w);
 				*ip++ = (celem_t)(code + off);
 			}
 			else if (selector == A_BIF && is_tuple(w) && tup_size(w) == intnum(3))
@@ -259,7 +259,7 @@ int code_base_load(code_base_t *self,
 				term_t m = tup_elts(w)[0];
 				term_t f = tup_elts(w)[1];
 				term_t n = tup_elts(w)[2];
-				bifN_t entry = code_base_bif(self, m, f, int_value(n));
+				bifN_t entry = code_base_bif(self, m, f, int_value2(n));
 				if (entry == 0)
 					entry = code_base_bif(self, A_CODE, A_UNDEFINED_BUILTIN, 0);
 				if (entry == 0)
@@ -295,8 +295,8 @@ int code_base_load(code_base_t *self,
 
 		exp = apr_palloc(pool, sizeof(export_t));
 		exp->key.afun = f;
-		exp->key.arity = int_value(a);
-		exp->entry = (code + int_value(offset));
+		exp->key.arity = int_value2(a);
+		exp->entry = (code + int_value2(offset));
 
 		apr_hash_set(e, &exp->key, sizeof(exp->key), exp);
 

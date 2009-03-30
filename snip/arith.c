@@ -349,12 +349,25 @@
 	}
 	else // two ints
 	{
-		//XXX
-		apr_int64_t r = (apr_int64_t)int_value(a) * int_value(b);
-		if (r <= MAX_INT_VALUE && r >= MIN_INT_VALUE)
-			push(intnum(r));
+		int_value_t va = int_value(a);
+		int_value_t vb = int_value(b);
+		
+		if (va <= 0x7fffffff && va >= -0x80000000 &&
+			vb <= 0x7fffffff && vb >= -0x80000000)
+		{
+			apr_int64_t r = (apr_int64_t)va * vb;
+			if (r <= MAX_INT_VALUE && r >= MIN_INT_VALUE)
+				push(intnum(r));
+			else
+				push(bignum(bignum_from64(r, proc->gc_cur)));
+		}
 		else
-			push(bignum(bignum_from64(r, proc->gc_cur)));
+		{
+			bignum_t *r;
+			bignum_t *t = bignum_from_int_value(va, proc->gc_cur);
+			r = bignum_mult2(t, vb, proc->gc_cur);
+			push(bignum_to_term(r, proc->gc_cur));
+		}
 	}
 
 /// div
@@ -386,7 +399,7 @@
 
 /// idiv
 	term_t a, b;
-	int r;
+	int_value_t r;
 	b = pop();
 	a = pop();
 
@@ -397,8 +410,8 @@
 
 	if (is_bignum(a) || is_bignum(b))
 	{
-		bignum_t *ba = (is_bignum(a))? bn_value(a): bignum_from32(int_value(a), proc->gc_cur);
-		bignum_t *bb = (is_bignum(b))? bn_value(b): bignum_from32(int_value(b), proc->gc_cur);
+		bignum_t *ba = (is_bignum(a))? bn_value(a): bignum_from_int_value(int_value(a), proc->gc_cur);
+		bignum_t *bb = (is_bignum(b))? bn_value(b): bignum_from_int_value(int_value(b), proc->gc_cur);
 		
 		bignum_t *q = bignum_div(ba, bb, 0, proc->gc_cur);
 		push(bignum_to_term(q, proc->gc_cur));
@@ -411,7 +424,7 @@
 
 /// rem
 	term_t a, b;
-	int r;
+	int_value_t r;
 	b = pop();
 	a = pop();
 
@@ -422,8 +435,8 @@
 
 	if (is_bignum(a) || is_bignum(b))
 	{
-		bignum_t *ba = (is_bignum(a))? bn_value(a): bignum_from32(int_value(a), proc->gc_cur);
-		bignum_t *bb = (is_bignum(b))? bn_value(b): bignum_from32(int_value(b), proc->gc_cur);
+		bignum_t *ba = (is_bignum(a))? bn_value(a): bignum_from_int_value(int_value(a), proc->gc_cur);
+		bignum_t *bb = (is_bignum(b))? bn_value(b): bignum_from_int_value(int_value(b), proc->gc_cur);
 		
 		bignum_t *reminder;
 		bignum_div(ba, bb, &reminder, proc->gc_cur); // ignore returned value
@@ -459,11 +472,11 @@
 	{
 		bignum_t *b1, *b2, *b3;
 		if (is_int(a))
-			b1 = bignum_from32(int_value(a), proc->gc_cur);
+			b1 = bignum_from_int_value(int_value(a), proc->gc_cur);
 		else
 			b1 = bn_value(a);
 		if (is_int(b))
-			b2 = bignum_from32(int_value(b), proc->gc_cur);
+			b2 = bignum_from_int_value(int_value(b), proc->gc_cur);
 		else
 			b2 = bn_value(b);
 		b3 = bignum_and(b1, b2, proc->gc_cur);
@@ -483,7 +496,7 @@
 		bad_arg();
 	if (is_int(a))
 	{
-		int v = ~int_value(a);
+		int_value_t v = ~int_value(a);
 		push(intnum(v));
 	}
 	else
@@ -496,11 +509,11 @@
 	term_t n = top();
 	if (is_int(n))
 	{
-		apr_int32_t v = int_value(n);
+		int_value_t v = int_value(n);
 		if (v == MIN_INT_VALUE)
 		{
 			//a single value which becomes bignum when negated
-			top() = bignum(bignum_from32(-v, proc->gc_cur));
+			top() = bignum(bignum_from_int_value(-v, proc->gc_cur));
 		}
 		else
 			top() = intnum(-v);

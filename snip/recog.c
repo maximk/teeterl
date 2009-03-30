@@ -40,10 +40,10 @@
                 //TODO: will be gone when fridge becomes list
                 term_t fridge = fun_fridge(fun);
                 int nfree = (is_tuple(fridge))
-                        ?int_value(tup_size(fun_fridge(fun)))
+                        ?int_value2(tup_size(fun_fridge(fun)))
                         :0;
-                int arity1 = int_value(fun_arity(fun)) - nfree;
-                top() = bool(int_value(n) == arity1);
+                int arity1 = int_value2(fun_arity(fun)) - nfree;
+                top() = bool(int_value2(n) == arity1);
         }
 
 /// is_literal
@@ -92,7 +92,7 @@
 
 /// is_tuple_of_arity(uint arity)
         term_t t = top();
-        int ok = is_tuple(t) && (int_value(tup_size(t)) == arity);
+        int ok = is_tuple(t) && (int_value2(tup_size(t)) == arity);
         top() = bool(ok);
 
 /// is_binary

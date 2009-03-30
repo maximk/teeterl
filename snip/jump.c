@@ -76,7 +76,7 @@
 
 /// tail_call(codep l)
 	cs->nelts = proc->ebp;	// drop all variables
-	proc->ebp = int_value(rpop());		// redundant?
+	proc->ebp = int_value2(rpop());		// redundant?
 
 	proc->ip = l;
 	reductions--;
@@ -122,7 +122,7 @@
 	celem_t *l;
 
 	cs->nelts = proc->ebp;	// drop all variables
-	proc->ebp = int_value(rpop());
+	proc->ebp = int_value2(rpop());
 
 	l = code_base_lookup(proc->base,
 		amod, afun, n, &proc->mod_index, &proc->code);
@@ -295,8 +295,8 @@ apply_me:	// label used by apply_fun
 
 		nargs = lst_len(args);
 
-		arity = int_value(fun_arity(fun));
-		nfree = int_value(tup_size(fridge));
+		arity = int_value2(fun_arity(fun));
+		nfree = int_value2(tup_size(fridge));
 
 		if (nargs + nfree != arity)
 			bad_arg();
@@ -334,11 +334,11 @@ apply_me:	// label used by apply_fun
 		rpush(AI_UNDEFINED);
 /// leave
 	cs->nelts = proc->ebp;
-	proc->ebp = int_value(rpop());
+	proc->ebp = int_value2(rpop());
 
 /// ret(uint n)
-	apr_uint32_t off = int_value(rpop());
-	apr_uint32_t mod_index = int_value(rpop());
+	apr_uint32_t off = (apr_uint32_t)int_value(rpop());
+	apr_uint32_t mod_index = (apr_uint32_t)int_value(rpop());
 	celem_t *code;
 	
 	if (mod_index == MOD_INDEX_NONE)
