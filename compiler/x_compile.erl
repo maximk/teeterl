@@ -282,15 +282,15 @@ fold_comp([{Name,Test,Pass}|Ps], Run, St) ->
 	    fold_comp([{Name,Pass}|Ps], Run, St)
     end;
 fold_comp([{Name,Pass}|Ps], Run, St0) ->
-    case Run({Name,Pass}, St0) of
+    case catch Run({Name,Pass}, St0) of
 	{ok,St1} -> fold_comp(Ps, Run, St1);
-	{error,St1} -> {error,St1}
-	%{'EXIT',Reason} ->
-	%    Es = [{St0#compile.ifile,[{none,?MODULE,{crash,Name,Reason}}]}],
-	%    {error,St0#compile{errors=St0#compile.errors ++ Es}};
-	%Other ->
-	%    Es = [{St0#compile.ifile,[{none,?MODULE,{bad_return,Name,Other}}]}],
-	%    {error,St0#compile{errors=St0#compile.errors ++ Es}}
+	{error,St1} -> {error,St1};
+	{'EXIT',Reason} ->
+	    Es = [{St0#compile.ifile,[{none,?MODULE,{crash,Name,Reason}}]}],
+	    {error,St0#compile{errors=St0#compile.errors ++ Es}};
+	Other ->
+	    Es = [{St0#compile.ifile,[{none,?MODULE,{bad_return,Name,Other}}]}],
+	    {error,St0#compile{errors=St0#compile.errors ++ Es}}
     end;
 fold_comp([], _Run, St) -> {ok,St}.
 

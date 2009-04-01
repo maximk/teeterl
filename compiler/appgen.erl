@@ -59,7 +59,7 @@ main([_Node|Args]) when length(Args) >= 2 ->
 		io:format(O, "extern unsigned char ~s_bin_data[];~n", [Name])
 	end, Mods),
 	io:nl(O),
-	io:format(O, "int main(int ac, char *av[])~n", []),
+	io:format(O, "int main(int ac, const char *av[])~n", []),
 	io:format(O, "{~n", []),
 	%% io:format(O, "\tteeterl_init(\"\\0~.8b~s\");~n~n", [length(Node),Node]),
 	io:format(O, "\tteeterl_init();~n~n", []),

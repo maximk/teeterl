@@ -274,7 +274,7 @@ apply_me:	// label used by apply_fun
 	// yielding to init means that source line info gets
 	// incorporated correctly
 	//
-	// NB: this may cause a huge performance hit
+	// NB: this may cause a performance hit
 	//
 	return AI_YIELD;
 

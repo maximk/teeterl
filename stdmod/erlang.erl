@@ -282,24 +282,30 @@ binary_to_list(Bin) ->
 
 pid_to_list(Pid) when is_pid(Pid), node(Pid) =:= local ->
 	{_Node,Serial,Creation} = erlang:prp_triple(Pid),
-	io_lib:format("<~w.~w>", [Serial,Creation]);
+	S=io_lib:format("<~w.~w>", [Serial,Creation]),
+	lists:flatten(S);
 pid_to_list(Pid) when is_pid(Pid) ->
 	{Node,Serial,Creation} = erlang:prp_triple(Pid),
-	io_lib:format("<~w.~w.~w>", [Node,Serial,Creation]).
+	S=io_lib:format("<~w.~w.~w>", [Node,Serial,Creation]),
+	lists:flatten(S).
 
 ref_to_list(Ref) when is_reference(Ref), node(Ref) =:= local ->
 	{_Node,Serial,Creation} = erlang:prp_triple(Ref),
-	io_lib:format("#Ref<~w.~w>", [Serial,Creation]);
+	S=io_lib:format("#Ref<~w.~w>", [Serial,Creation]),
+	lists:flatten(S);
 ref_to_list(Ref) when is_reference(Ref) ->
 	{Node,Serial,Creation} = erlang:prp_triple(Ref),
-	io_lib:format("#Ref<~w.~w.~w>", [Node,Serial,Creation]).
+	S=io_lib:format("#Ref<~w.~w.~w>", [Node,Serial,Creation]),
+	lists:flatten(S).
 
 port_to_list(Port) when is_port(Port), node(Port) =:= local ->
 	{_Node,Serial,Creation} = erlang:prp_triple(Port),
-	io_lib:format("#Port<~w.~w>", [Serial,Creation]);
+	S=io_lib:format("#Port<~w.~w>", [Serial,Creation]),
+	lists:flatten(S);
 port_to_list(Port) when is_port(Port) ->
 	{Node,Serial,Creation} = erlang:prp_triple(Port),
-	io_lib:format("#Port<~w.~w.~w>", [Node,Serial,Creation]).
+	S=io_lib:format("#Port<~w.~w.~w>", [Node,Serial,Creation]),
+	lists:flatten(S).
 
 fun_to_list(Fun) when is_function(Fun) ->
 	{_,M} = erlang:fun_info(Fun, module),
@@ -383,19 +389,33 @@ list_to_integer([], _, I) ->
 list_to_integer(_, _, _) ->
     badarg.
 
-list_to_pid(L) ->
+list_to_pid(L) when is_list(L) ->
+
+	%% TODO: kludgy, use regexp?
 	
-	$< = hd(L),
-	$> = lists:last(L),
+	case {hd(L),lists:last(L)} of
+	{$<,$>} ->
+		ok;
+	_ ->
+		erlang:exit({badarg,L})
+	end,
 	
 	L1 = string:substr(L, 2, string:len(L)-2),
-	[Node,Serial,Creation] = string:tokens(L1, "."),
+	case string:tokens(L1, ".") of
+	[Node,Serial,Creation] ->
+		N = list_to_atom(Node),
+		S = erlang:list_to_integer(Serial),
+		C = erlang:list_to_integer(Creation),
+		erlang:make_pid(N, S, C);
+		
+	[Serial,Creation] ->
+		S = erlang:list_to_integer(Serial),
+		C = erlang:list_to_integer(Creation),
+		erlang:make_pid(local, S, C);
 	
-	N = list_to_atom(Node),
-	S = erlang:list_to_integer(Serial),
-	C = erlang:list_to_integer(Creation),
-	
-	erlang:make_pid(N, S, C).
+	_ ->
+		erlang:exit({badarg,L})
+	end.
 
 iolist_size([H|T]) ->
 	erlang:iolist_size(H) + erlang:iolist_size(T);

@@ -294,6 +294,7 @@ int code_base_load(code_base_t *self,
 		a = tup_elts(fa)[1];
 
 		exp = apr_palloc(pool, sizeof(export_t));
+		memset(exp, 0, sizeof(*exp));
 		exp->key.afun = f;
 		exp->key.arity = int_value2(a);
 		exp->entry = (code + int_value2(offset));
@@ -304,6 +305,7 @@ int code_base_load(code_base_t *self,
 	}
 
 	m = apr_palloc(pool, sizeof(module_t));
+	memset(m, 0, sizeof(*m));
 	m->pool = pool;
 	m->xp = xp;
 	m->key.amod = amod;

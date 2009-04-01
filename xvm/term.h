@@ -158,7 +158,7 @@ typedef apr_int64_t int_value_t;
 #else
 #define MAX_UINT_VALUE	((1l << (64 - TAG_INT_SIZE))-1)
 #define MAX_INT_VALUE	((1l << (64 - TAG_INT_SIZE - 1))-1)
-#define MIN_INT_VALUE	((1l << (64 - TAG_INT_SIZE - 1)))
+#define MIN_INT_VALUE	((-1l << (64 - TAG_INT_SIZE - 1)))
 #endif
 
 #define bool(ok) ((ok)? A_TRUE: A_FALSE)

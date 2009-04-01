@@ -588,7 +588,7 @@ term_t bif_float_to_list1(term_t Number, process_t *ctx)
 term_t bif_list_to_float1(term_t Chars, process_t *ctx)
 {
 	apr_pool_t *tmp;
-	const char *buf;
+	const char *buf, *endptr;
 	double d;
 
 	if (!is_string(Chars))
@@ -596,8 +596,16 @@ term_t bif_list_to_float1(term_t Chars, process_t *ctx)
 
 	apr_pool_create(&tmp, 0);
 	buf = ltoz(Chars, tmp);
-
-	if (sscanf(buf, "%lf", &d) != 1) //XXX
+	
+	// decimal point must be there
+	if (strchr(buf, '.') == 0)
+	{
+		apr_pool_destroy(tmp);
+		return A_BADARG;
+	}	
+	
+	d = strtod(buf, &endptr);
+	if (endptr == buf)
 	{
 		apr_pool_destroy(tmp);
 		return A_BADARG;
