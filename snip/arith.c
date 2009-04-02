@@ -242,9 +242,10 @@
 	}
 	else
 	{
-		// shifts < 0 -> bsr
+		// shifts < 0 -> bsr		
+		//TODO: bignums?
 
-		if (-shifts >= 32)
+		if (-shifts >= 32) 	// should it be 64 for 64-bit OSes?
 			r = intnum((int_value(a) > 0) ?0 :-1);
 		else
 			r = intnum(int_value(a) >> -shifts);
@@ -252,7 +253,7 @@
 	push(r);
 
 /// bsr
-	// a bsl b
+	// a bsr b
 	term_t a, b, r;
 	int shifts;
 	b = pop();
@@ -283,8 +284,9 @@
 	else
 	{
 		// shifts > 0
+		//TODO: bignums?
 
-		if (shifts >= 32)
+		if (shifts >= 32)	// should it be 64 for 64-bit OSes?
 			r = intnum((int_value(a) > 0) ?0 :-1);
 		else
 			r = intnum(int_value(a) >> shifts);

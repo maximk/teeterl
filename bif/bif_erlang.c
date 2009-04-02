@@ -557,6 +557,9 @@ term_t bif_float_to_list1(term_t Number, process_t *ctx)
 	char *p;
 	if (!is_float(Number))
 		return A_BADARG;
+	
+	// TODO: +inf, -inf and NaN should throw an exception
+	
 	apr_pool_create(&tmp, 0);
 	p = apr_psprintf(tmp, "%.20e", dbl_value(Number));
 	result(ztol(p, proc_gc_pool(ctx)));
@@ -604,8 +607,7 @@ term_t bif_list_to_float1(term_t Chars, process_t *ctx)
 		return A_BADARG;
 	}	
 	
-	d = strtod(buf, &endptr);
-	if (endptr == buf)
+	if (sscanf(buf, "%lf", &d) != 1)
 	{
 		apr_pool_destroy(tmp);
 		return A_BADARG;

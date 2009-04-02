@@ -566,13 +566,17 @@ term_t bignum_to_term(bignum_t *a, xpool_t *xp)
 		return intnum(-(int_value_t)a->digits[0]);
 	if (bn_sign(a) == 0 && bn_size(a) == 2)
 	{
-		apr_uint64_t v = (apr_uint64_t)a->digits[0] << 32 + a->digits[1];
+		apr_uint64_t v = (apr_uint64_t)a->digits[0] << 32;
+		v += a->digits[1];	// somehow it doesn't work if combined with previous line
+		
 		if (v <= MAX_INT_VALUE)
 			return intnum(v);
 	}
 	if (bn_sign(a) == 1 && bn_size(a) == 2)
 	{
-		apr_uint64_t v = (apr_uint64_t)a->digits[0] << 32 + a->digits[1];
+		apr_uint64_t v = (apr_uint64_t)a->digits[0] << 32;
+		v += a->digits[1];
+		
 		if (v <= MAX_INT_VALUE+1)
 			return intnum(-(int_value_t)v);
 	}

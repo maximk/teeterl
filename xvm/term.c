@@ -482,7 +482,16 @@ const char *stringify_term(term_t t, atoms_t *atoms, apr_pool_t *pool)
 			return quote_atom(print_name, pool);
 	}
 	else if (is_float(t))
-		return apr_psprintf(pool, "%lf", dbl_value(t));
+	{
+		
+		//TODO: the following three lines formatted to demonstrate wierd
+		//behaviour of apr_psprintf which returns many zeroes from
+		//apr_psprintf(pool, "%lf", 1.7e308). Is this MacOs specific?
+
+		double d = dbl_value(t);
+		const char *s = apr_psprintf(pool, "%lf", d);
+		return s;
+	}
 	else if (is_tuple(t))
 	{
 		int i;
