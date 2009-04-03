@@ -1,0 +1,3 @@
+Apr 3, 2008:	001: Compiler crashes on the following: {1,2} = A = B = C
+Apr 3, 2008:	002: term_to_binary() ignores funs
+Apr 3, 2008:	003: fun_spawn() in beam_literals_SUITE.erl -- quietly exits if spawn replaced with spawn_link

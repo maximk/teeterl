@@ -242,13 +242,20 @@ int terms_are_less(term_t a, term_t b, atoms_t *atoms)
 	}
 	else if (is_binary(a) && is_binary(b))
 	{
+		// binaries compared by values first
+		// if one binary is prefix of the other
+		// then sizes are compared
+		
 		int sa = int_value2(bin_size(a));
 		int sb = int_value2(bin_size(b));
-		if (sa < sb)
+		int ss = (sa > sb) ?sb :sa;
+		int cmp = memcmp(bin_data(a), bin_data(b), ss);
+		
+		if (cmp < 0)
 			return 1;
-		if (sa > sb)
+		if (cmp > 0)
 			return 0;
-		return memcmp(bin_data(a), bin_data(b), sa) < 0;
+		return sa < sb;
 	}
 	else if (is_int(a) && is_float(b))
 		return (double)int_value(a) < dbl_value(b);

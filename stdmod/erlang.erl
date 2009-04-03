@@ -27,7 +27,7 @@
 -module(erlang).
 -export([abs/1]).
 -export([erase/0,erase/1,get/1,get_keys/1,put/2]).
--export([self/0,apply/3,exit/1,throw/1,error/1,error/2]).
+-export([self/0,apply/2,apply/3,exit/1,throw/1,error/1,error/2]).
 -export([raise/3,get_stacktrace/0,get_stacktrace/1]).
 -export([link/1,unlink/1]).
 -export([get_module_info/1,get_module_info/2]).
@@ -38,6 +38,7 @@
 -export([group_leader/0,group_leader/1]).
 -export([monitor/2,demonitor/1]).
 
+-export([term_to_binary/2,concat_binary/1]).
 -export([binary_to_list/1,pid_to_list/1,ref_to_list/1,port_to_list/1,fun_to_list/1]).
 
 -export([integer_to_list/1,list_to_integer/1]).
@@ -103,6 +104,9 @@ put(Key, Val) ->
 %%
 self() ->
 	erlang:self().
+
+apply(Fun, As) when is_function(Fun), is_list(As) ->
+	erlang:apply(Fun, As).
 
 apply(M, F, As) when is_atom(M), is_atom(F), is_list(As) ->
 	erlang:apply(M, F, As).
@@ -273,6 +277,17 @@ demonitor(Ref) ->
 		ok
 	after ?NET_TIMEOUT ->
 		erlang:error(timeout)
+	end.
+
+term_to_binary(Term, Options) when is_list(Options) ->
+	erlang:term_to_binary(Term).	%% ignore options for now, typical option is 'compressed'
+
+concat_binary(ListOfBins) when is_list(ListOfBins) ->
+	case lists:all(fun erlang:is_binary/1, ListOfBins) of
+	true ->
+		list_to_binary(ListOfBins);
+	_ ->
+		erlang:error(badarg)
 	end.
 
 binary_to_list(<<>>) ->

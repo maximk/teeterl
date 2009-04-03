@@ -252,6 +252,10 @@ static void pack(apr_array_header_t *pad, term_t t, atom_cache_t *cache, atoms_t
 				length++;
 				l = lst_next(l);
 			}
+			
+			if (!is_nil(l))
+				print_only = 0;		// wierd lists are never strings
+				
 			if (print_only && length <= 65535) //string, not too long
 			{
 				put(EXTERM_STRING);

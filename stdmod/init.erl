@@ -35,7 +35,7 @@
 
 -define(NORMAL_ADVANTAGE, 8).
 -define(REDUCTIONS, 10000).
--define(MAX_HEAP_SIZE, 4*1024*1024).
+-define(MAX_HEAP_SIZE, 8*1024*1024).
 
 %% -define(TRACE, true).
 
