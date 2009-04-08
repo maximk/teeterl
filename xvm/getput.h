@@ -122,4 +122,20 @@
 	((apr_uint64_t)(buf)[1] << 8) | \
 	((apr_uint64_t)(buf)[0]))
 
+#if APR_IS_BIGENDIAN
+#define PUT16_NAT(buf, n) PUT16(buf, n)
+#define PUT32_NAT(buf, n) PUT32(buf, n)
+#define PUT64_NAT(buf, n) PUT64(buf, n)
+#define GET16_NAT(buf) GET16(buf)
+#define GET32_NAT(buf) GET32(buf)
+#define GET64_NAT(buf) GET64(buf)
+#else
+#define PUT16_NAT(buf, n) PUT16_LE(buf, n)
+#define PUT32_NAT(buf, n) PUT32_LE(buf, n)
+#define PUT64_NAT(buf, n) PUT64_LE(buf, n)
+#define GET16_NAT(buf) GET16_LE(buf)
+#define GET32_NAT(buf) GET32_LE(buf)
+#define GET64_NAT(buf) GET64_LE(buf)
+#endif
+
 #endif /*!GETPUT_H*/

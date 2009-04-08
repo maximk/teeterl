@@ -175,67 +175,233 @@
 		exception(A_ERROR, A_BADARG);
 
 /// bin_add_i_n(int unit)
-	exception(A_ERROR, A_NOT_IMPLEMENTED);
+	apr_byte_t buf[8];
+	apr_int32_t nbits;
+	term_t value;
+
+	nbits = int_value(pop());
+	value = pop();
+	nbits *= unit;
+
+	if (is_int(value))
+	{
+		int_value_t i = int_value(value);
+		if (i > 0x7fffffff || i < -0x80000000)
+			value = bignum(bignum_from_int_value(i, proc->gc_cur));
+	}
+
+	if (is_bignum(value))
+	{
+		bignum_t *bn = bn_value(value);
+		int bn_size = bn_size(bn) * 32;	//TODO: negative bignum?
+
+		if (nbits >= bn_size)
+		{
+			int i;
+			for (i = bn_size(bn)-1; i >= 0; i--)
+			{
+				PUT32_NAT(buf, bn->digits[i]);
+				bin_pad_append(proc->bsite, buf, 32);
+			}
+			bin_pad_zeros(proc->bsite, nbits, bn_size);
+		}
+		else
+		{
+			apr_uint32_t i;
+
+			// <<12345678999:48/little>> == <<151,28,220,223,2,0>>
+			
+			int o = nbits / 32; // # of digits from the end of bn
+			int s = nbits % 32;
+
+			// [n-1] .. [n-o] -- whole digits
+			// [n-o-1] -- partial digit
+
+			//whole digits
+			for (i = bn_size(bn)-1; i >= bn_size(bn)-o; i--)
+			{
+				PUT32_NAT(buf, bn->digits[i]);
+				bin_pad_append(proc->bsite, buf, 32);
+			}
+
+			//partial digit
+			if (s > 0)
+			{
+				PUT32_NAT(buf, bn->digits[bn_size(bn)-o-1]);
+				bin_pad_append(proc->bsite, buf, s);
+			}
+		}
+	}
+	else if (is_int(value))
+	{
+		apr_int64_t v = int_value(value);
+
+		PUT64_NAT(buf, v);
+		if (nbits >= 64)
+		{
+			bin_pad_append(proc->bsite, buf, 64);
+			bin_pad_zeros(proc->bsite, nbits-64, 0);
+		}
+		else
+		{
+			//adjust incomplete byte
+			int o = nbits / 8;
+			int s = nbits % 8;
+			buf[o] <<= (8-s);
+			bin_pad_append(proc->bsite, buf, nbits);
+		}
+	}
+	else
+		exception(A_ERROR, A_BADARG);
 
 /// bin_add_f_b(int unit)
 	apr_byte_t buf[8];
 	apr_int32_t nbits = int_value(pop());
 	term_t value = pop();
 
-	union {
-		apr_int64_t l;
-		double d;
-	} u;
+	if (!is_number(value))
+		bad_arg();
 
 	nbits *= unit;
 
-	//XXX: size must be 64 here -- why?
-	if (nbits != 64)
-		exception(A_ERROR, A_BADARG);
-	
-	if (is_int(value))
-		u.d = (double)int_value(value);
-	else if (is_float(value))
-		u.d = dbl_value(value);
-	else // bignum
-		u.d = bignum_to_double(bn_value(value));
+	if (nbits == 64)
+	{
+		union {
+			apr_int64_t l;
+			double d;
+		} u;
 
-	PUT64(buf, u.l);
-	bin_pad_append(proc->bsite, buf, nbits);
+		if (is_int(value))
+			u.d = (double)int_value(value);
+		else if (is_float(value))
+			u.d = dbl_value(value);
+		else // bignum
+			u.d = bignum_to_double(bn_value(value));
+
+		PUT64(buf, u.l);
+		bin_pad_append(proc->bsite, buf, nbits);
+	}
+	else if (nbits == 32)
+	{
+		union {
+			apr_int32_t i;
+			float f;
+		} u;
+
+		if (is_int(value))
+			u.f = (float)int_value(value);
+		else if (is_float(value))
+			u.f = (float)dbl_value(value);
+		else // bignum
+			u.f = (float)bignum_to_double(bn_value(value));
+
+		PUT32(buf, u.i);
+		bin_pad_append(proc->bsite, buf, nbits);
+	}
+	else
+		exception(A_ERROR, A_BADARG);
 
 /// bin_add_f_l(int unit)
 	apr_byte_t buf[8];
 	apr_int32_t nbits = int_value(pop());
 	term_t value = pop();
 
-	union {
-		apr_int64_t l;
-		double d;
-	} u;
+	if (!is_number(value))
+		bad_arg();
 
 	nbits *= unit;
 
-	//XXX: size must be 64 here -- why?
-	if (nbits != 64)
-		exception(A_ERROR, A_BADARG);
-	
-	if (is_int(value))
-		u.d = (double)int_value(value);
-	else if (is_float(value))
-		u.d = dbl_value(value);
-	else // bignum
-		u.d = bignum_to_double(bn_value(value));
+	if (nbits == 64)
+	{
+		union {
+			apr_int64_t l;
+			double d;
+		} u;
 
-	PUT64_LE(buf, u.l);
-	bin_pad_append(proc->bsite, buf, nbits);
+		if (is_int(value))
+			u.d = (double)int_value(value);
+		else if (is_float(value))
+			u.d = dbl_value(value);
+		else // bignum
+			u.d = bignum_to_double(bn_value(value));
+
+		PUT64_LE(buf, u.l);
+		bin_pad_append(proc->bsite, buf, nbits);
+	}
+	else if (nbits == 32)
+	{
+		union {
+			apr_int32_t i;
+			float f;
+		} u;
+
+		if (is_int(value))
+			u.f = (float)int_value(value);
+		else if (is_float(value))
+			u.f = (float)dbl_value(value);
+		else // bignum
+			u.f = (float)bignum_to_double(bn_value(value));
+
+		PUT32_LE(buf, u.i);
+		bin_pad_append(proc->bsite, buf, nbits);
+	}
+	else
+		exception(A_ERROR, A_BADARG);
 
 /// bin_add_f_n(int unit)
-	exception(A_ERROR, A_NOT_IMPLEMENTED);
+	apr_byte_t buf[8];
+	apr_int32_t nbits = int_value(pop());
+	term_t value = pop();
+
+	if (!is_number(value))
+		bad_arg();
+
+	nbits *= unit;
+
+	if (nbits == 64)
+	{
+		union {
+			apr_int64_t l;
+			double d;
+		} u;
+
+		if (is_int(value))
+			u.d = (double)int_value(value);
+		else if (is_float(value))
+			u.d = dbl_value(value);
+		else // bignum
+			u.d = bignum_to_double(bn_value(value));
+
+		PUT64_NAT(buf, u.l);
+		bin_pad_append(proc->bsite, buf, nbits);
+	}
+	else if (nbits == 32)
+	{
+		union {
+			apr_int32_t i;
+			float f;
+		} u;
+
+		if (is_int(value))
+			u.f = (float)int_value(value);
+		else if (is_float(value))
+			u.f = (float)dbl_value(value);
+		else // bignum
+			u.f = (float)bignum_to_double(bn_value(value));
+
+		PUT32_NAT(buf, u.i);
+		bin_pad_append(proc->bsite, buf, nbits);
+	}
+	else
+		exception(A_ERROR, A_BADARG);
 
 /// bin_add_b(int unit)
 	term_t size = pop();
 	term_t bin = pop();
 	int nbits;
+	
+	if (!is_binary(bin))
+		bad_arg();
 
 	if (size == A_ALL)
 		nbits = int_value2(bin_size(bin))*8;
@@ -526,14 +692,20 @@
 
 /// bin_fetch_bin(int unit)
 	term_t size = pop();
-	int nbits, nbytes;
+	int nbitsleft, nbits, nbytes;
 	apr_byte_t *data;
 	term_t t;
 	
+	nbitsleft = int_value2(bin_size(proc->worm))*8 - proc->marker;
+	
 	if (size == A_ALL)
-		nbits = int_value2(bin_size(proc->worm))*8 - proc->marker;
+		nbits = nbitsleft;
 	else
+	{
 		nbits = int_value2(size) * unit;
+		if (nbits < 0 || nbits > nbitsleft )
+			bad_arg();
+	}
 
 	if (nbits % 8 != 0)
 		bad_arg();

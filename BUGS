@@ -1,3 +1,7 @@
-Apr 3, 2008:	001: Compiler crashes on the following: {1,2} = A = B = C
-Apr 3, 2008:	002: term_to_binary() ignores funs
-Apr 3, 2008:	003: fun_spawn() in beam_literals_SUITE.erl -- quietly exits if spawn replaced with spawn_link
+Apr 3, 2009:	001: Compiler crashes on the following: {1,2} = A = B = C
+Apr 3, 2009:	002: term_to_binary() ignores funs
+Apr 4, 2009:	004: float may be packed to 32 bits in binary
+Apr 4, 2009:	005: native byte order not implemented
+Apr 4, 2009:	006: <<4:4,7:4>> can not be interpreted as bitstrings are not supported (eval_bits.erl requires changes)
+Apr 5, 2009:	007: <<A:1/binary,B:1/binary>> = <<1,2>> does not work in interpreter (if sizes are specified)
+Apr 8, 2009:	008: during binary matching size variable gets cleared prematurely, see comments in binary.c

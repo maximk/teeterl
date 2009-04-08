@@ -822,6 +822,14 @@ code(#kselect{anno=_A,var=U,matches=Ms,otherwise=E}, St0) ->
 					
 					%% FIX: suppress label information in the statement
 					
+					%% BUG: this is not enough as the size variable slot
+					%% gets used by other variable prematurely --
+					%% label information should be suppressed much
+					%% earlier making size variable effectively 'fixed'
+					%% its space will not be reused -- or, find the
+					%% righteous way to postpone deallocation of var
+					%% until $1
+					
 					code(Variable#c_var{anno=[]}, St0),		
 					{lit,S,Unit},
 					{mult,S},
@@ -845,7 +853,7 @@ code(#kselect{anno=_A,var=U,matches=Ms,otherwise=E}, St0) ->
 						Sz when is_integer(Sz) ->
 							{lit,S,Sz};
 						Variable ->
-						code(Variable, St0)		%% BUG: $1 see above
+							code(Variable, St0)		%% BUG: $1 see above
 						end,
 						fetch_op(Seg),
 						save_var1(V, St0)
