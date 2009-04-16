@@ -488,7 +488,7 @@
 	else if (first_non_zero == digits->nelts-1)
 	{
 		digit_t dig = ((digit_t *)digits->elts)[first_non_zero];
-		if (dig <= MAX_UINT_VALUE)
+		if (dig <= MAX_INT_VALUE)
 			push(intnum(dig));
 		else
 			push(bignum(bignum_make(0, 1, &dig, proc->gc_cur)));
@@ -498,7 +498,7 @@
 		digit_t *digs = (digit_t *)digits->elts + first_non_zero;
 		apr_uint64_t v = ((apr_uint64_t)digs[0] << 32) + digs[1];
 		
-		if (v <= MAX_UINT_VALUE)
+		if (v <= MAX_INT_VALUE)
 			push(intnum(v));
 		else
 			push(bignum(bignum_make(0, 2, digs, proc->gc_cur)));		
@@ -577,7 +577,7 @@
 	else if (first_non_zero == digits->nelts-1)
 	{
 		digit_t dig = ((digit_t *)digits->elts)[first_non_zero];
-		if (dig <= MAX_UINT_VALUE)
+		if (dig <= MAX_INT_VALUE)
 			push(intnum(dig));
 		else
 			push(bignum(bignum_make(0, 1, &dig, proc->gc_cur)));
@@ -587,7 +587,7 @@
 		digit_t *digs = (digit_t *)digits->elts + first_non_zero;
 		apr_uint64_t v = ((apr_uint64_t)digs[0] << 32) + digs[1];
 		
-		if (v <= MAX_UINT_VALUE)
+		if (v <= MAX_INT_VALUE)
 			push(intnum(v));
 		else
 			push(bignum(bignum_make(0, 2, digs, proc->gc_cur)));		
@@ -647,31 +647,33 @@
 		if (((digit_t *)digits->elts)[first_non_zero] != 0)
 			break;
 	}
-
+	
 	if (first_non_zero == digits->nelts)
 		push(intnum(0));
 	else if (first_non_zero == digits->nelts-1)
 	{
 		digit_t dig = ((digit_t *)digits->elts)[first_non_zero];
-		if (dig <= MAX_UINT_VALUE)
-			push(intnum(dig));
+		
+		int_value_t v = (int_value_t)dig;
+		if (v >= MIN_INT_VALUE && v <= MAX_INT_VALUE)
+			push(intnum(v));
 		else
-			push(bignum(bignum_make(0, 1, &dig, proc->gc_cur)));
+			push(bignum(bignum_from32(v, proc->gc_cur)));
 	}
 	else if (first_non_zero == digits->nelts-2)
 	{
 		digit_t *digs = (digit_t *)digits->elts + first_non_zero;
-		apr_uint64_t v = ((apr_uint64_t)digs[0] << 32) + digs[1];
 		
-		if (v <= MAX_UINT_VALUE)
+		apr_int64_t v = ((apr_int64_t)digs[0] << 32) + digs[1];
+		if (v >= MIN_INT_VALUE && v <= MAX_INT_VALUE)
 			push(intnum(v));
 		else
-			push(bignum(bignum_make(0, 2, digs, proc->gc_cur)));		
+			push(bignum(bignum_from64(v, proc->gc_cur)));		
 	}
 	else //use bignum
 	{
 		int n = digits->nelts - first_non_zero;
-		bignum_t *bn = bignum_make(0, n, (digit_t *)digits->elts + first_non_zero, proc->gc_cur);
+		bignum_t *bn = bignum_decomplement((const digit_t *)digits->elts + first_non_zero, n, proc->gc_cur);
 		push(bignum(bn));
 	}
 

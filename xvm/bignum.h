@@ -97,4 +97,7 @@ bignum_t *bignum_bsr(const bignum_t *a, int n, xpool_t *xp);
 double bignum_to_double(const bignum_t *a);
 const char *bignum_to_str(const bignum_t *a, apr_pool_t *pool);
 
+const digit_t *bignum_complement(const bignum_t *a, int *r_size, digit_t *r_pad, xpool_t *xp);
+bignum_t *bignum_decomplement(const digit_t *digits, int n, xpool_t *xp);
+
 #endif

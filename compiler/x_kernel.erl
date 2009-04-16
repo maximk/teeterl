@@ -279,9 +279,24 @@ kernel(#kselect{anno=A,var=U,matches=Ms,otherwise=E}, Sub0, Rs0) ->
 kernel(#kmatch{anno=A,class=Class,vars=Us,then=E}, Sub0, Rs0) ->
 	{Vs,Sub1,RsN} = new_vars(Us, false, Sub0, Rs0),
 	%io:format("Vs=~p~n", [Vs]),
-	{E1,Rs1} = kernel(E, Sub1, RsN),
+
+	%% Class may have var expressions, kernel() then too
+	{Class1,RsA} = case Class of
+	  #kbinary{segments=Ss} ->
+		{Ss0,RsB} = lists:mapfoldl(fun(#kseg{size=#c_var{}=Sz}=Seg, RsB) ->
+			{Sz1,Rs} = kernel(Sz, Sub1, RsB),
+			{Seg#kseg{size=Sz1},Rs};
+		(Seg, RsB) ->
+			{Seg,RsB}
+		end, RsN, Ss),
+		{#kbinary{segments=Ss0},RsB};
+	  X ->
+		{X,RsN}
+	end,
+	
+	{E1,Rs1} = kernel(E, Sub1, RsA),
 	{L,Rs2} = new_label(Rs1),
-	{#kmatch{anno=[{l,L}|A],class=Class,vars=Vs,then=E1},Rs2};
+	{#kmatch{anno=[{l,L}|A],class=Class1,vars=Vs,then=E1},Rs2};
 
 kernel(#kfail{}=E, _, Rs0) -> {E,Rs0};
 kernel(#krecloop{}=E, _, Rs0) -> {E,Rs0};
@@ -563,12 +578,18 @@ match_bins([U|Us], Ks, E, Sub0, Rs0) ->
 	{Ms,_,Rs1} = foldr(fun({[#c_binary{segments=Ss}|Ps],C}, {Ms,Class0,#kr{vno=Vno}=Rs1}) ->
 		%% Ss = [#c_bitstr{val,size,unit,type,flags}]
 		
-		{Ss0,RsN} = lists:mapfoldl(fun(#c_bitstr{size=#c_var{}=Sz}=Seg, RsN) ->
-			{Sz1,Rs} = kernel(Sz, Sub0, RsN),
-			{Seg#c_bitstr{size=Sz1},Rs};
-		(Seg, RsN) ->
-			{Seg,RsN}
-		end, Rs1, Ss),
+		{Ss0,RsN} = {Ss,Rs1},
+		
+		%% NB: Assigning labels to var expressions here
+		%% does not follow the train of execution
+		%% and leads to bad var life spans
+		
+		%%{Ss0,RsN} = lists:mapfoldl(fun(#c_bitstr{size=#c_var{}=Sz}=Seg, RsN) ->
+		%%	{Sz1,Rs} = kernel(Sz, Sub0, RsN),
+		%%	{Seg#c_bitstr{size=Sz1},Rs};
+		%%(Seg, RsN) ->
+		%%	{Seg,RsN}
+		%%end, Rs1, Ss),
 		
 		{Es,Ss1} = lists:unzip(map(fun(#c_bitstr{val=Value,
 			size=#c_var{}=Sz,

@@ -34,9 +34,6 @@ static bignum_t *subtract(int n1, const digit_t *d1, int n2, const digit_t *d2, 
 static int compare(int n1, const digit_t *d1, int n2, const digit_t *d2);
 static bignum_t *subtract2(int n1, const digit_t *d1, int n2, const digit_t *d2, xpool_t *xp);
 
-static const digit_t *bignum_complement(const bignum_t *a, int *r_size, digit_t *r_pad, xpool_t *xp);
-static bignum_t *bignum_decomplement(const digit_t *digits, int n, xpool_t *xp);
-
 bignum_t *bignum_make0(int sign, int n, xpool_t *xp)
 {
 	bignum_t *a = xalloc(xp, 4 + sizeof(digit_t)*n);
@@ -598,7 +595,7 @@ bignum_t *bignum_xor(const bignum_t *a, const bignum_t *b, xpool_t *xp)
 // such bignums are always positive itself
 //
 
-static const digit_t *bignum_complement(const bignum_t *a, int *r_size, digit_t *r_pad, xpool_t *xp)
+const digit_t *bignum_complement(const bignum_t *a, int *r_size, digit_t *r_pad, xpool_t *xp)
 {
 	bignum_t *a1;
 	int high_bit_set;
@@ -650,7 +647,7 @@ static const digit_t *bignum_complement(const bignum_t *a, int *r_size, digit_t 
 	}
 }
 
-static bignum_t *bignum_decomplement(const digit_t *digits, int n, xpool_t *xp)
+bignum_t *bignum_decomplement(const digit_t *digits, int n, xpool_t *xp)
 {
 	int high_bit_set;
 
