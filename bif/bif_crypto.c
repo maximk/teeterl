@@ -49,13 +49,19 @@ term_t bif_md5_init0(process_t *ctx)
 term_t bif_md5_update2(term_t Data, term_t Context, process_t *ctx)
 {
 	apr_size_t size;
+	md5_ctx_t *tmp;
 	if (!is_binary(Data) || !is_binary(Context))
 		return A_BADARG;
 	if (int_value2(bin_size(Context)) != sizeof(md5_ctx_t))
 		return A_BADARG;
 	size = (apr_size_t)int_value(bin_size(Data));
-	md5_update((md5_ctx_t *)bin_data(Context), bin_data(Data), size);
-	result(A_OK);
+	
+	tmp = xalloc(proc_gc_pool(ctx), sizeof(*tmp));
+	memcpy(tmp, bin_data(Context), sizeof(*tmp));
+	
+	md5_update(tmp, bin_data(Data), size);
+	result(make_binary(intnum(sizeof(*tmp)),
+		(apr_byte_t *)tmp, proc_gc_pool(ctx)));
 	return AI_OK;
 }
 
@@ -98,13 +104,19 @@ term_t bif_sha1_init0(process_t *ctx)
 term_t bif_sha1_update2(term_t Data, term_t Context, process_t *ctx)
 {
 	apr_size_t size;
+	sha1_ctx_t *tmp;
 	if (!is_binary(Data) || !is_binary(Context))
 		return A_BADARG;
 	if (int_value2(bin_size(Context)) != sizeof(sha1_ctx_t))
 		return A_BADARG;
 	size = (apr_size_t)int_value(bin_size(Data));
-	sha1_update((sha1_ctx_t *)bin_data(Context), bin_data(Data), size);
-	result(A_OK);
+	
+	tmp = xalloc(proc_gc_pool(ctx), sizeof(*tmp));
+	memcpy(tmp, bin_data(Context), sizeof(*tmp));
+	
+	sha1_update(tmp, bin_data(Data), size);
+	result(make_binary(intnum(sizeof(*tmp)),
+		(apr_byte_t *)tmp, proc_gc_pool(ctx)));
 	return AI_OK;
 }
 
