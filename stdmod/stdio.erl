@@ -37,8 +37,16 @@ server() ->
 server0(St0) ->
 	receive
 	{io_request,ReplyTo,_Me,{put_chars,M,F,As}} ->
-		S = apply(M, F, As),
-		print_hooked_iolist(S, St0),
+	
+		S = case catch apply(M, F, As) of
+		{'EXIT',_}=E ->
+			erlang:display(E),
+			[];
+		X ->
+			print_hooked_iolist(X, St0),
+			X
+		end,
+		
 		ReplyTo ! {io_reply,self(),ok},
 		server0(St0#is{stdout=[S|St0#is.stdout]});
 

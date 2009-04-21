@@ -547,7 +547,7 @@ exp_pat(#c_alias{pat=#c_literal{val=Ls}}=Alias) when is_list(Ls) ->
 	end, #c_literal{val=[]}, Ls),
 	Alias#c_alias{pat=Pat1};
 	
-exp_pat(#c_literal{val=V}) when not is_integer(V), not is_atom(V) ->
+exp_pat(#c_literal{val=V}) when not is_number(V), not is_atom(V) ->
 	erlang:error({unexpected_literal_pattern,V});
 exp_pat(P) -> P.
 

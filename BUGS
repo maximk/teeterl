@@ -6,3 +6,5 @@ Apr 4, 2009:	006: <<4:4,7:4>> can not be interpreted as bitstrings are not suppo
 Apr 5, 2009:	007: <<A:1/binary,B:1/binary>> = <<1,2>> does not work in interpreter (if sizes are specified)
 Apr 8, 2009:	008: FIXED: during binary matching size variable gets cleared prematurely, see comments in binary.c
 Apr 21, 2009:	009: <<N:16,B:N/binary,R/binary>> not supported but no error is emitted (label not defined warnings)
+Apr 21, 2009:	010: [] + [] and its kin may return badarith rather than badarg as they do now
+Apr 21, 2009:	011: infinity does not handled properly (see num_bif_SUITE)

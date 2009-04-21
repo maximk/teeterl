@@ -83,13 +83,13 @@ fread(Cont, Chars, Format) ->
     io_lib_fread:fread(Cont, Chars, Format).
 
 format(Format, Args) ->
-	io_lib_format:fwrite(Format, Args).
-    %case catch io_lib_format:fwrite(Format, Args) of
-	%{'EXIT',_} ->
-	%    erlang:error(badarg, [Format, Args]);
-	%Other ->
-	%    Other
-    %end.
+	%io_lib_format:fwrite(Format, Args).
+    case catch io_lib_format:fwrite(Format, Args) of
+	{'EXIT',_} ->
+	    erlang:error(badarg, [Format, Args]);
+	Other ->
+	    Other
+    end.
 
 print(Term) ->
     io_lib_pretty:print(Term).
