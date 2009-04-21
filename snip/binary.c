@@ -605,9 +605,9 @@
 /// bin_fetch_i_s_b(int unit)
 	apr_byte_t buf[8];
 	int nbits = int_value(pop()) * unit;
-	int first_non_zero;
 	static apr_array_header_t *digits = 0;
 	int o, s;
+	bignum_t *bn;
 
 	if (proc->marker + nbits > int_value(bin_size(proc->worm))*8)
 		bad_arg();
@@ -640,45 +640,83 @@
 		*(digit_t *)apr_array_push(digits) = GET32(buf);
 		o--;
 	}
-
-	// choose between intnum and bignum
-	for (first_non_zero = 0; first_non_zero < digits->nelts; first_non_zero++)
-	{
-		if (((digit_t *)digits->elts)[first_non_zero] != 0)
-			break;
-	}
 	
-	if (first_non_zero == digits->nelts)
-		push(intnum(0));
-	else if (first_non_zero == digits->nelts-1)
-	{
-		digit_t dig = ((digit_t *)digits->elts)[first_non_zero];
-		
-		int_value_t v = (int_value_t)dig;
-		if (v >= MIN_INT_VALUE && v <= MAX_INT_VALUE)
-			push(intnum(v));
-		else
-			push(bignum(bignum_from32(v, proc->gc_cur)));
-	}
-	else if (first_non_zero == digits->nelts-2)
-	{
-		digit_t *digs = (digit_t *)digits->elts + first_non_zero;
-		
-		apr_int64_t v = ((apr_int64_t)digs[0] << 32) + digs[1];
-		if (v >= MIN_INT_VALUE && v <= MAX_INT_VALUE)
-			push(intnum(v));
-		else
-			push(bignum(bignum_from64(v, proc->gc_cur)));		
-	}
-	else //use bignum
-	{
-		int n = digits->nelts - first_non_zero;
-		bignum_t *bn = bignum_decomplement((const digit_t *)digits->elts + first_non_zero, n, proc->gc_cur);
-		push(bignum(bn));
-	}
+	// this may need refactoring as it allocates bignum_t for any
+	// number -- probably, not a problem since signed numbers are not
+	// widespread as binary fields
+	
+	bn = bignum_decomplement((const digit_t *)digits->elts, digits->nelts, proc->gc_cur);
+	push(bignum_to_term(bn, proc->gc_cur));
 
 /// bin_fetch_i_s_l(int unit)
-	exception(A_ERROR, A_NOT_IMPLEMENTED);
+	apr_byte_t buf[8];
+	int nbits = int_value(pop()) * unit;
+	static apr_array_header_t *digits = 0;
+	int i, o, s;
+	bignum_t *bn;
+
+	if (proc->marker + nbits > int_value(bin_size(proc->worm))*8)
+		bad_arg();
+
+	if (digits == 0)
+    {
+        apr_pool_t *poo;
+        apr_pool_create(&poo, 0);       //TODO: never destroyed
+        digits = apr_array_make(poo, 1, 4);
+    }
+	else
+		digits->nelts = 0;
+
+	o = nbits / 32; // # of whole digits
+	s = nbits % 32;
+	
+	//whole digits
+	while (o > 0)
+	{
+		fetch_bits(bin_data(proc->worm), proc->marker, buf, 32);
+		proc->marker += 32;
+		*(digit_t *)apr_array_push(digits) = GET32_LE(buf);
+		o--;
+	}
+
+	//partial digit
+	if (s > 0)
+	{
+		int o2 = s / 8;	// last byte may require tweaking
+		int s2 = s % 8;
+		int is_negative;
+		apr_uint32_t mask = (1 << s) - 1;
+		digit_t dig;
+
+		fetch_bits(bin_data(proc->worm), proc->marker, buf, s);
+		proc->marker += s;
+		
+		is_negative = buf[o2] & 0x80;
+		
+		if (s2 > 0)
+			buf[o2] >>= (8-s2);
+
+		dig = GET32_LE(buf) & mask;
+		if (is_negative)
+			dig |= 0xffffffff & ~mask;
+		
+		*(digit_t *)apr_array_push(digits) = dig;
+	}
+
+	//reverse digits
+	for (i = 0; i < digits->nelts/2; i++)
+	{
+		digit_t temp = ((digit_t *)digits->elts)[i];
+		((digit_t *)digits->elts)[i] = ((digit_t *)digits->elts)[digits->nelts-i-1];
+		((digit_t *)digits->elts)[digits->nelts-i-1] = temp;
+	}
+	
+	// this may need refactoring as it allocates bignum_t for any
+	// number -- probably, not a problem since signed numbers are not
+	// widespread as binary fields
+	
+	bn = bignum_decomplement((const digit_t *)digits->elts, digits->nelts, proc->gc_cur);
+	push(bignum_to_term(bn, proc->gc_cur));
 
 /// bin_fetch_i_s_n(int unit)
 	exception(A_ERROR, A_NOT_IMPLEMENTED);
