@@ -47,6 +47,12 @@ apr_hash_t *processes = 0;	//serial
 apr_hash_t *registry = 0;	//registered_name
 apr_uint32_t next_pid = 0;
 
+int g_reductions = 0;		//global reductions count
+int g_reductions0 = 0;		//same, since last call to system_info(reductions)
+
+apr_interval_time_t g_runtime = 0;
+apr_interval_time_t g_runtime0 = 0;		//since last call to system_info(runtime)
+
 typedef struct catch_t catch_t;
 struct catch_t {
 	int csp;
@@ -626,6 +632,10 @@ bignum_t *bignum_from_int_value(int_value_t v, xpool_t *xp)
 
 term_t proc_main(process_t *proc, int reductions, term_t *retval)
 {
+	int allocated_reductions = reductions;		//save initial value to update global counter on return
+	apr_time_t main_started = apr_time_now();	//NB: possible performance hit
+	apr_interval_time_t elapsed;
+
 	term_t exc_class;
 	term_t reason;
 
@@ -655,6 +665,15 @@ resume_after_catch:
 			fatal_err("Bad opcode");
 		}
 	}
+	
+	// update global reductions counts
+	g_reductions += (allocated_reductions - reductions);
+	g_reductions0 += (allocated_reductions - reductions);
+	
+	// update global runtime measures
+	elapsed = apr_time_now() - main_started;
+	g_runtime += elapsed;
+	g_runtime0 += elapsed;
 
 	return AI_YIELD;
 
@@ -688,6 +707,13 @@ cellar:
 	}
 	else
 	{
+		g_reductions += (allocated_reductions - reductions);
+		g_reductions0 += (allocated_reductions - reductions);
+
+		elapsed = apr_time_now() - main_started;
+		g_runtime += elapsed;
+		g_runtime0 += elapsed;
+		
 		*retval = reason;
 		return exc_class;
 	}

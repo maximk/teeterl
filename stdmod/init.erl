@@ -56,7 +56,9 @@
 	links,			%% {Pid,PidPort}
 	norm_sched=0,	%% normal queue advantage
 	services=[],
-	monitors=[]}).	%% {BreakPid,NotifyPid}
+	monitors=[],	%% {BreakPid,NotifyPid}
+	gc_count=0,		%% # of times gc run
+	gc_reclaimed=0}).
 
 run(Args) ->
 	register(init, self()),
@@ -276,7 +278,33 @@ requests(St0) ->
 	
 	{stopped,_} ->	  %% answers from services being stopped, ignore
 		requests(St0);
-		
+	
+	%% erlang:statistics()
+	{statistics,From,run_queue} ->
+		H = length(St0#sc.highq),
+		N = length(St0#sc.normq),
+		L = length(St0#sc.lowq),
+		From ! {run_queue,H+N+L},
+		requests(St0);
+
+	{statistics,From,runtime} ->
+		Times = erlang:system_info(runtime),
+		From ! {runtime,Times},
+		requests(St0);
+	
+	{statistics,From,wall_clock} ->
+		From ! {wall_clock,0},			%% TODO: XXX
+		requests(St0);
+	
+	{statistics,From,reductions} ->
+		Counts = erlang:system_info(reductions),
+		From ! {reductions,Counts},
+		requests(St0);
+	
+	{statistics,From,garbage_collection} ->
+		From ! {garbage_collection,St0#sc.gc_count,St0#sc.gc_reclaimed},
+		requests(St0);
+
 	Req ->
 		erlang:display({unexpected_request,Req}),
 		requests(St0)
@@ -308,7 +336,7 @@ trash_burner(Pid) ->
 			%erlang:display(process_info(Pid, module)),
 			%erlang:display(process_info(Pid, offset)),
 			%erlang:display(process_info(Pid, heap_size)),
-			ok
+			{reclaimed,HeapSize-HeapSize1}
 		end;
 	_ ->
 		ok
@@ -345,7 +373,7 @@ schedule(St0) ->
 	{Ws2,Rs2} = wakeup_on_mail2(St2#sc.waits2),
 	St3 = park_runnables(Rs2, St2#sc{waits2=Ws2}),
 
-	trash_burner(self()),	%% gc jam ignored for init
+	trash_burner(self()),	%% gc jam ignored for init, XXX - counts not updated
 
 	case select_runnable(St3) of
 	empty ->
@@ -404,12 +432,19 @@ schedule(St0) ->
 		'$YIELD' ->
 			%% collect garbage if needed
 			case trash_burner(Pid) of
-			jam ->
-				St5 = process_exits(Pid, gc_jam, St4),
-				code:poll_ports(0),
-				schedule(St5);
 			ok ->
-				schedule(park_runnable(Pid, Prio, St4))
+				schedule(park_runnable(Pid, Prio, St4));
+				
+			{reclaimed,Reclaimed} ->
+				N = St4#sc.gc_count,
+				R = St4#sc.gc_reclaimed,
+				schedule(park_runnable(Pid, Prio, St4#sc{gc_count=N+1,gc_reclaimed=R+Reclaimed}));
+				
+			jam ->
+				N = St4#sc.gc_count,
+				St5 = process_exits(Pid, gc_jam, St4#sc{gc_count=N+1}),
+				code:poll_ports(0),
+				schedule(St5)
 			end;
 		
 		{'$BREAK',{_Module,_Offset}} ->

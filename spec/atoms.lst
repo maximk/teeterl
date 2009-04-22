@@ -29,7 +29,7 @@ high
 normal
 low
 #
-# Process info, port info, fun info
+# Process info, port info, fun info, system info
 #
 module
 offset
@@ -44,6 +44,8 @@ connected
 name
 arity
 env
+reductions
+runtime
 #
 # Process statuses, priorities, etc
 #

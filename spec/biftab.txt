@@ -102,6 +102,8 @@ erlang:garbage_collect(Pid)			bif_garbage_collect1
 erlang:get_stacktrace0(Pid)			bif_get_stacktrace0_1
 erlang:get_locals(Pid)				bif_get_locals1
 
+erlang:system_info(What)			bif_system_info1
+
 erlang:now()						bif_now0
 erlang:date()						bif_date0
 erlang:time()						bif_time0

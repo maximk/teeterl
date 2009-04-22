@@ -27,11 +27,11 @@
 -module(erlang).
 -export([abs/1]).
 -export([erase/0,erase/1,get/1,get_keys/1,put/2]).
--export([self/0,apply/2,apply/3,exit/1,throw/1,error/1,error/2]).
+-export([self/0,apply/2,apply/3,exit/1,exit/2,throw/1,error/1,error/2]).
 -export([raise/3,get_stacktrace/0,get_stacktrace/1]).
 -export([link/1,unlink/1]).
+-export([statistics/1]).
 -export([get_module_info/1,get_module_info/2]).
--export([system_info/1]).
 -export([spawn/3,spawn/1,spawn/4,spawn/2,spawn_link/3,spawn_link/1]).
 -export([spawn_link/4,spawn_link/2]).
 -export([spawn_monitor/3,spawn_monitor/1,spawn_monitor/4,spawn_monitor/2]).
@@ -114,6 +114,9 @@ apply(M, F, As) when is_atom(M), is_atom(F), is_list(As) ->
 exit(R) ->
 	erlang:exit(R).
 
+exit(Pid, R) ->
+	init ! {exit,Pid,erlang:self(),R}.
+
 throw(T) ->
 	erlang:throw(T).
 
@@ -173,9 +176,36 @@ get_stacktrace(Pid) ->
 		end
 	end, Trace0).
 
-%% TODO: stub
-system_info(machine) -> "isle";
-system_info(_) -> undefined.
+statistics(run_queue) ->
+	init ! {statistics,erlang:self(),run_queue},
+	receive
+	{run_queue,N} ->
+		N
+	end;
+statistics(runtime) ->
+	init ! {statistics,erlang:self(),runtime},
+	receive
+	{runtime,Times} ->
+		Times
+	end;
+statistics(wall_clock) ->
+	init ! {statistics,erlang:self(),wall_clock},
+	receive
+	{wall_clock,Time} ->
+		Time
+	end;
+statistics(reductions) ->
+	init ! {statistics,erlang:self(),reductions},
+	receive
+	{reductions,Counts} ->
+		Counts
+	end;
+statistics(garbage_collection) ->
+	init ! {statistics,erlang:self(),garbage_collection},
+	receive
+	{garbage_collection,Count,Reclaimed} ->
+		{Count,Reclaimed,0}		%% 0 for OTP compatibility
+	end.
 
 get_module_info(_Mod) -> todo.
 get_module_info(_Mod, _Info) -> todo.

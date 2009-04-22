@@ -8,3 +8,6 @@ Apr 8, 2009:	008: FIXED: during binary matching size variable gets cleared prema
 Apr 21, 2009:	009: <<N:16,B:N/binary,R/binary>> not supported but no error is emitted (label not defined warnings)
 Apr 21, 2009:	010: [] + [] and its kin may return badarith rather than badarg as they do now
 Apr 21, 2009:	011: infinity does not handled properly (see num_bif_SUITE)
+Apr 22, 2009:	012: 'time' option does not work in x_compile (incompatible code struck at run_tc)
+Apr 22, 2009:	013: apply() requires export attribute; compiler front-end does not catch this
+Apr 22, 2009:	014: 'links' part of estone test suite does not work, main process dies

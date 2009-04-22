@@ -194,7 +194,8 @@ predef_macros(File) ->
     Ms2 = dict:store({atom,'LINE'}, {none,[{integer,1,1}]}, Ms1),
     Ms3 = dict:store({atom,'MODULE'}, undefined, Ms2),
     Ms31 = dict:store({atom,'MODULE_STRING'}, undefined, Ms3),
-    Machine = list_to_atom(erlang:system_info(machine)),
+    %% Machine = list_to_atom(erlang:system_info(machine)), -- undocumented
+    Machine = isle,
     Ms4 = dict:store({atom,'MACHINE'}, {none,[{atom,1,Machine}]}, Ms31),
     dict:store({atom,Machine}, {none,[{atom,1,true}]}, Ms4).
 

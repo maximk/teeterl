@@ -22,6 +22,7 @@ ERL = /opt/local/bin/erl
 STD_LIBS =
 
 CCOPTS = -ggdb -iquotexvm $(APR_INCLUDES) -DAPR_DECLARE_STATIC -DAPU_DECLARE_STATIC
+#CCOPTS = -O3 -fast -iquotexvm $(APR_INCLUDES) -DAPR_DECLARE_STATIC -DAPU_DECLARE_STATIC
 
 #
 # Output files

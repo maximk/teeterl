@@ -102,143 +102,145 @@ term_t bif_time0(process_t *ctx);
 term_t bif_date0(process_t *ctx);
 // erlang:now/0 [42]
 term_t bif_now0(process_t *ctx);
-// erlang:get_locals/1 [43]
+// erlang:system_info/1 [43]
+term_t bif_system_info1(term_t What, process_t *ctx);
+// erlang:get_locals/1 [44]
 term_t bif_get_locals1(term_t Pid, process_t *ctx);
-// erlang:get_stacktrace0/1 [44]
+// erlang:get_stacktrace0/1 [45]
 term_t bif_get_stacktrace0_1(term_t Pid, process_t *ctx);
-// erlang:garbage_collect/1 [45]
+// erlang:garbage_collect/1 [46]
 term_t bif_garbage_collect1(term_t Pid, process_t *ctx);
-// erlang:garbage_collect/0 [46]
+// erlang:garbage_collect/0 [47]
 term_t bif_garbage_collect0(process_t *ctx);
-// erlang:process_flag/3 [47]
+// erlang:process_flag/3 [48]
 term_t bif_process_flag3(term_t Pid, term_t What, term_t Value, process_t *ctx);
-// erlang:port_info/2 [48]
+// erlang:port_info/2 [49]
 term_t bif_port_info2(term_t Port, term_t What, process_t *ctx);
-// erlang:process_info/2 [49]
+// erlang:process_info/2 [50]
 term_t bif_process_info2(term_t Pid, term_t What, process_t *ctx);
-// erlang:close_port/1 [50]
+// erlang:close_port/1 [51]
 term_t bif_close_port1(term_t Port, process_t *ctx);
-// erlang:ports/0 [51]
+// erlang:ports/0 [52]
 term_t bif_ports0(process_t *ctx);
-// erlang:set_port_option/3 [52]
+// erlang:set_port_option/3 [53]
 term_t bif_set_port_option3(term_t Port, term_t Opt, term_t Value, process_t *ctx);
-// erlang:open_port/2 [53]
+// erlang:open_port/2 [54]
 term_t bif_open_port2(term_t Term, term_t Options, process_t *ctx);
-// erlang:is_local_node/1 [54]
+// erlang:is_local_node/1 [55]
 term_t bif_is_local_node1(term_t Node, process_t *ctx);
-// erlang:set_node/1 [55]
+// erlang:set_node/1 [56]
 term_t bif_set_node1(term_t Node, process_t *ctx);
-// erlang:node/0 [56]
+// erlang:node/0 [57]
 term_t bif_node0(process_t *ctx);
-// erlang:node/1 [57]
+// erlang:node/1 [58]
 term_t bif_node1(term_t PidRefPort, process_t *ctx);
-// erlang:registered/0 [58]
+// erlang:registered/0 [59]
 term_t bif_registered0(process_t *ctx);
-// erlang:whereis/1 [59]
+// erlang:whereis/1 [60]
 term_t bif_whereis1(term_t RegName, process_t *ctx);
-// erlang:unregister/1 [60]
+// erlang:unregister/1 [61]
 term_t bif_unregister1(term_t RegName, process_t *ctx);
-// erlang:register/2 [61]
+// erlang:register/2 [62]
 term_t bif_register2(term_t RegName, term_t Pid, process_t *ctx);
-// erlang:phash/2 [62]
+// erlang:phash/2 [63]
 term_t bif_phash2(term_t Term, term_t Range, process_t *ctx);
-// erlang:prp_triple/1 [63]
+// erlang:prp_triple/1 [64]
 term_t bif_prp_triple1(term_t PidRefPort, process_t *ctx);
-// erlang:append_element/2 [64]
+// erlang:append_element/2 [65]
 term_t bif_append_element2(term_t Tuple, term_t Elem, process_t *ctx);
-// erlang:make_tuple/2 [65]
+// erlang:make_tuple/2 [66]
 term_t bif_make_tuple2(term_t N, term_t InitVal, process_t *ctx);
-// erlang:list_to_float/1 [66]
+// erlang:list_to_float/1 [67]
 term_t bif_list_to_float1(term_t Chars, process_t *ctx);
-// erlang:float_to_list/1 [67]
+// erlang:float_to_list/1 [68]
 term_t bif_float_to_list1(term_t N, process_t *ctx);
-// erlang:list_to_tuple/1 [68]
+// erlang:list_to_tuple/1 [69]
 term_t bif_list_to_tuple1(term_t List, process_t *ctx);
-// erlang:tuple_to_list/1 [69]
+// erlang:tuple_to_list/1 [70]
 term_t bif_tuple_to_list1(term_t Tuple, process_t *ctx);
-// erlang:list_to_binary/1 [70]
+// erlang:list_to_binary/1 [71]
 term_t bif_list_to_binary1(term_t Bin, process_t *ctx);
-// erlang:binary_to_list/3 [71]
+// erlang:binary_to_list/3 [72]
 term_t bif_binary_to_list3(term_t Bin, term_t Beg, term_t End, process_t *ctx);
-// erlang:term_to_binary/1 [72]
+// erlang:term_to_binary/1 [73]
 term_t bif_term_to_binary1(term_t Bin, process_t *ctx);
-// erlang:binary_to_term/1 [73]
+// erlang:binary_to_term/1 [74]
 term_t bif_binary_to_term1(term_t Bin, process_t *ctx);
-// erlang:split_binary/2 [74]
+// erlang:split_binary/2 [75]
 term_t bif_split_binary2(term_t Bin, term_t N, process_t *ctx);
-// erlang:list_to_atom/1 [75]
+// erlang:list_to_atom/1 [76]
 term_t bif_list_to_atom1(term_t Atom, process_t *ctx);
-// erlang:atom_to_list/1 [76]
+// erlang:atom_to_list/1 [77]
 term_t bif_atom_to_list1(term_t Atom, process_t *ctx);
-// erlang:trunc/1 [77]
+// erlang:trunc/1 [78]
 term_t bif_trunc1(term_t Number, process_t *ctx);
-// erlang:round/1 [78]
+// erlang:round/1 [79]
 term_t bif_round1(term_t Number, process_t *ctx);
-// erlang:float/1 [79]
+// erlang:float/1 [80]
 term_t bif_float1(term_t Number, process_t *ctx);
-// erlang:hd/1 [80]
+// erlang:hd/1 [81]
 term_t bif_hd1(term_t List, process_t *ctx);
-// erlang:tl/1 [81]
+// erlang:tl/1 [82]
 term_t bif_tl1(term_t List, process_t *ctx);
-// erlang:length/1 [82]
+// erlang:length/1 [83]
 term_t bif_length1(term_t List, process_t *ctx);
-// erlang:setelement/3 [83]
+// erlang:setelement/3 [84]
 term_t bif_setelement3(term_t N, term_t Tuple, term_t Value, process_t *ctx);
-// erlang:element/2 [84]
+// erlang:element/2 [85]
 term_t bif_element2(term_t N, term_t Tuple, process_t *ctx);
-// erlang:bit_size/1 [85]
+// erlang:bit_size/1 [86]
 term_t bif_bit_size1(term_t Bin, process_t *ctx);
-// erlang:size/1 [86]
+// erlang:size/1 [87]
 term_t bif_size1(term_t TupleOrBin, process_t *ctx);
-// erlang:fun_info/2 [87]
+// erlang:fun_info/2 [88]
 term_t bif_fun_info2(term_t Fun, term_t What, process_t *ctx);
-// erlang:fun_info/1 [88]
+// erlang:fun_info/1 [89]
 term_t bif_fun_info1(term_t Fun, process_t *ctx);
-// erlang:make_fun/3 [89]
+// erlang:make_fun/3 [90]
 term_t bif_make_fun3(term_t Name, term_t Arity, term_t FreeVars, process_t *ctx);
-// erlang:send_msg0/2 [90]
+// erlang:send_msg0/2 [91]
 term_t bif_send_msg0_2(term_t Rcpt, term_t Msg, process_t *ctx);
-// erlang:display/1 [91]
+// erlang:display/1 [92]
 term_t bif_display1(term_t Term, process_t *ctx);
-// io:print_iolist/1 [92]
+// io:print_iolist/1 [93]
 term_t bif_print_iolist1(term_t IOList, process_t *ctx);
-// code:soft_purge/1 [93]
+// code:soft_purge/1 [94]
 term_t bif_soft_purge1(term_t Mod, process_t *ctx);
-// code:purge/1 [94]
+// code:purge/1 [95]
 term_t bif_purge1(term_t Mod, process_t *ctx);
-// code:delete/1 [95]
+// code:delete/1 [96]
 term_t bif_delete_module1(term_t Mod, process_t *ctx);
-// code:poll_ports/1 [96]
+// code:poll_ports/1 [97]
 term_t bif_poll_ports1(term_t Time, process_t *ctx);
-// code:destroy_process/1 [97]
+// code:destroy_process/1 [98]
 term_t bif_destroy_process1(term_t Pid, process_t *ctx);
-// code:run_slice/2 [98]
+// code:run_slice/2 [99]
 term_t bif_run_slice2(term_t Pid, term_t Reductions, process_t *ctx);
-// code:spawn0/1 [99]
+// code:spawn0/1 [100]
 term_t bif_spawn0_1(term_t F, process_t *ctx);
-// code:spawn0/3 [100]
+// code:spawn0/3 [101]
 term_t bif_spawn0_3(term_t Mod, term_t Fun, term_t Args, process_t *ctx);
-// code:all_loaded/0 [101]
+// code:all_loaded/0 [102]
 term_t bif_all_loaded0(process_t *ctx);
-// code:is_loaded/1 [102]
+// code:is_loaded/1 [103]
 term_t bif_is_loaded1(term_t Mod, process_t *ctx);
-// code:load_module0/3 [103]
+// code:load_module0/3 [104]
 term_t bif_load_module0_3(term_t Mod, term_t Exports, term_t Preloaded, process_t *ctx);
-// code:list_embedded/0 [104]
+// code:list_embedded/0 [105]
 term_t bif_list_embedded0(process_t *ctx);
-// code:embedded_module/1 [105]
+// code:embedded_module/1 [106]
 term_t bif_embedded_module1(term_t Mod, process_t *ctx);
-// code:undefined_builtin/0 [106]
+// code:undefined_builtin/0 [107]
 term_t bif_undefined_builtin0(process_t *ctx);
-// lists:member/2 [107]
+// lists:member/2 [108]
 term_t bif_member2(term_t Elem, term_t List, process_t *ctx);
-// lists:last/1 [108]
+// lists:last/1 [109]
 term_t bif_last1(term_t List, process_t *ctx);
-// lists:keysearch/3 [109]
+// lists:keysearch/3 [110]
 term_t bif_keysearch3(term_t Key, term_t N, term_t TupleList, process_t *ctx);
-// lists:keymember/3 [110]
+// lists:keymember/3 [111]
 term_t bif_keymember3(term_t Key, term_t N, term_t TupleList, process_t *ctx);
-// lists:reverse/2 [111]
+// lists:reverse/2 [112]
 term_t bif_reverse2(term_t List, term_t Tail, process_t *ctx);
 
 #endif

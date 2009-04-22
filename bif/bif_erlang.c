@@ -37,6 +37,11 @@
 #include "port.h"
 #include "errors.h"
 
+extern int g_reductions;
+extern int g_reductions0;
+extern apr_interval_time_t g_runtime;
+extern apr_interval_time_t g_runtime0;
+
 term_t my_node = A_LOCAL;
 term_t my_prev_node = A_LOCAL;
 
@@ -1016,6 +1021,31 @@ term_t bif_get_locals1(term_t Pid, process_t *ctx)
 		result(A_FALSE);
 	else
 		result(proc_get_locals(proc));
+	return AI_OK;
+}
+
+term_t bif_system_info1(term_t What, process_t *ctx)
+{
+	if (!is_atom(What))
+		return A_BADARG;
+	if (What == A_REDUCTIONS)
+	{
+		term_t counts = make_tuple2(intnum(g_reductions),
+			intnum(g_reductions0),
+			proc_gc_pool(ctx));
+		g_reductions0 = 0;
+		result(counts);
+	}
+	else if (What == A_RUNTIME)
+	{
+		term_t times = make_tuple2(bignum(bignum_from64(g_runtime, proc_gc_pool(ctx))),
+			bignum(bignum_from64(g_runtime0, proc_gc_pool(ctx))),
+			proc_gc_pool(ctx));
+		g_runtime0 = 0;
+		result(times);
+	}
+	else
+		result(A_UNDEFINED);
 	return AI_OK;
 }
 
