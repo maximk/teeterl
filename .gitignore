@@ -15,9 +15,10 @@ vc70.idb
 vc70.pdb
 
 lib
-xbin
-bin
-ebin
+
+xbin/*
+bin/*
+ebin/*
 
 navel
 
