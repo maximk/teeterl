@@ -1,390 +1,116 @@
-/*
-* Copyright (c) 2009, Maxim Kharchenko
-* All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*     * Redistributions of source code must retain the above copyright
-*       notice, this list of conditions and the following disclaimer.
-*     * Redistributions in binary form must reproduce the above copyright
-*       notice, this list of conditions and the following disclaimer in the
-*       documentation and/or other materials provided with the distribution.
-*     * Neither the name of the author nor the names of his contributors
-*	    may be used to endorse or promote products derived from this software
-*		without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY Maxim Kharchenko ''AS IS'' AND ANY
-* EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL Maxim Kharchenko BE LIABLE FOR ANY
-* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+//
+//
+//
 
-#include "bif.h"
-
+#include "bifimpl.h"
+#include "modbin.h"
 #include "code_base.h"
-#include "port.h"
-#include "errors.h"
-#include "xmod.h"
+#include "exterm.h"
 
-extern apr_array_header_t *module_bins;
-
-term_t bif_embedded_module1(term_t Mod, process_t *ctx)
+term_t bif_load_module1(term_t Where, proc_t *proc)
 {
-	xmod_bin_t *mp, *me;
-	cstr_t *s;
-	
-	if (!is_atom(Mod))
-		return A_BADARG;
+	term_t bin = noval;
+	term_t code;
+	term_box_t *tb;
+	term_t module;
 
-	s = atoms_get(proc_atoms(ctx), index(Mod));
-	
-	mp = (xmod_bin_t *)module_bins->elts;
-	me = mp + module_bins->nelts;
-	while (mp < me)
+	if (!is_atom(Where) && !is_binary(Where))
+		bif_bad_arg(Where);
+
+	if (is_atom(Where))
 	{
-		if (scomp(mp->name, s))
+		modbin_t **mb;
+		cstr_t *name;
+
+		if (code_base_lookup(proc->teevm->base, Where) != 0)
+			return A_NOT_PURGED;
+
+		name = atoms_get(proc->teevm->atoms, atom_index(Where));
+
+		mb = modbins;
+		while (*mb)
 		{
-			term_t bin = make_binary(intnum(mp->size), mp->data, proc_gc_pool(ctx));
-			result(make_tuple3(A_OK, bin, bool(mp->is_preloaded), proc_gc_pool(ctx)));
-			return AI_OK;
+			if (scomp((*mb)->name, name))
+			{
+				bin = heap_binary(proc->heap, (*mb)->size*8, (*mb)->data);
+				break;
+			}
+			mb++;
 		}
-		mp++;
-	}
-	result(A_FALSE);
-	return AI_OK;
-}
 
-term_t bif_list_embedded0(process_t *ctx)
-{
-	term_t l = nil, cons = nil;
-	xmod_bin_t *mp, *me;
+		if (bin == noval)
+			return A_FALSE;
+	}
+	else
+		bin = Where;
+
+	code = binary_to_term(bin, proc->teevm->atoms, proc->heap);
+
+	if (code == noval)
+		return A_BADFILE;
 	
-	mp = (xmod_bin_t *)module_bins->elts;
-	me = mp + module_bins->nelts;
-	while (mp < me)
+	tb = peel(code);
+	if (!code_base_load(proc->teevm->base,
+		tb->tuple.elts[1],
+		tb->tuple.elts[2],
+		tb->tuple.elts[3],
+		tb->tuple.elts[4],
+		tb->tuple.elts[5],
+		tb->tuple.elts[6]) == 0)
+		return A_BADFILE;
+
+	module = tb->tuple.elts[1];
+	if (is_atom(Where))
 	{
-		//{Mod,Size,IsPreloaded}
-		term_t mod = atom(atoms_set(proc_atoms(ctx), mp->name));
-		term_t size = intnum(mp->size);
-		term_t is_preloaded = bool(mp->is_preloaded);
-
-		term_t triple = make_tuple3(mod, size, is_preloaded, proc_gc_pool(ctx));
-		lst_add(l, cons, triple, proc_gc_pool(ctx));
-
-		mp++;
+		if (Where != module)
+			return A_BADFILE;
+		return A_TRUE;
 	}
-	result(l);
-	return AI_OK;
+	else
+		return heap_tuple2(proc->heap, A_MODULE, module);
 }
 
-term_t bif_load_module0_3(term_t Mod, term_t Exports, term_t Preloaded, process_t *ctx)
+term_t bif_is_loaded1(term_t Module, proc_t *proc)
 {
-	code_base_t *base = proc_code_base(ctx);
-
-	// TODO: check params
-
-	int ok = code_base_load(base, Mod, Exports, Preloaded);
-	result(bool(ok));
-	return AI_OK;
+	if (!is_atom(Module))
+		bif_bad_arg(Module);
+	if (code_base_lookup(proc->teevm->base, Module) == 0)
+		return A_FALSE;
+	else
+		return A_TRUE;
 }
 
-term_t bif_is_loaded1(term_t Mod, process_t *ctx)
+// code:module_offset/3 [7]
+term_t bif_module_offset3(term_t Module, term_t File, term_t Line, proc_t *proc)
 {
-	term_t loaded;
-	code_base_t *base = proc_code_base(ctx);
+	not_implemented("code:module_offset/3");
+}
 
-	if (!is_atom(Mod))
-		return A_BADARG;
+// code:source_line/2 [8]
+term_t bif_source_line2(term_t Module, term_t Offset, proc_t *proc)
+{
+	module_t *m;
+
+	if (!is_atom(Module))
+		bif_bad_arg(Module);
+	if (!is_int(Offset))
+		bif_bad_arg(Offset);
+
+	m = code_base_lookup(proc->teevm->base, Module);
+	if (m != 0)
+	{
+		const char *file;
+		int line;
+		
+		if (!module_source_from_offset(m, int_value(Offset), &file, &line))
+			return A_FALSE;
+
+		return heap_tuple2(proc->heap,
+			ztol(file, proc->heap),
+			tag_int(line));
+	}
 	
-	loaded = bool(code_base_starts2(base, Mod) != 0);
-	result(loaded);
-	return AI_OK;
+	return A_FALSE;
 }
 
-term_t bif_all_loaded0(process_t *ctx)
-{
-	term_t mlst = code_base_list_modules(proc_code_base(ctx), proc_gc_pool(ctx));
-	result(mlst);
-	return AI_OK;
-}
-
-term_t bif_spawn0_3(term_t Mod, term_t Fun, term_t Args, process_t *ctx)
-{
-	process_t *proc;
-
-	if (!is_atom(Mod) || !is_atom(Fun) || !is_list(Args))
-		return A_BADARG;
-
-	proc = proc_spawn(proc_code_base(ctx), proc_atoms(ctx), Mod, Fun, Args);
-	if (proc == 0)
-		return A_BADARG;
-
-	result(proc_pid(proc, proc_gc_pool(ctx)));
-	return AI_OK;
-}
-
-term_t bif_spawn0_1(term_t F, process_t *ctx)
-{
-	process_t *proc;
-	term_t mod, fun, args = nil;
-	term_t cons = nil;
-	term_t fridge;
-	int i, nfree;
-
-	if (!is_fun(F))
-		return A_BADARG;
-
-	fridge = fun_fridge(F);
-	nfree = int_value2(tup_size(fridge));
-
-	if (int_value2(fun_arity(F)) != nfree)
-		return A_BADARG;
-
-	for (i = 0; i < nfree; i++)
-		lst_add(args, cons, tup_elts(fridge)[i], proc_gc_pool(ctx));
-
-	mod = fun_amod(F);
-	fun = fun_afun(F);
-
-	proc = proc_spawn(proc_code_base(ctx), proc_atoms(ctx), mod, fun, args);
-	if (proc == 0)
-		return A_BADARG;
-
-	result(proc_pid(proc, proc_gc_pool(ctx)));
-	return AI_OK;
-}
-
-term_t bif_run_slice2(term_t Pid, term_t Reductions, process_t *ctx)
-{
-	process_t *proc;
-	term_t retval, retval1;
-	term_t res;
-	if (!is_pid(Pid) || !is_int(Reductions))
-		return A_BADARG;
-	proc = proc_lookup(pid_serial(Pid));
-	res = proc_main(proc, int_value2(Reductions), &retval);
-
-	if (res == AI_DONE)
-	{
-		//proc_destroy(proc);
-		//- process should not be destroyed now
-		//- as we may need to notify links first
-
-		retval1 = marshal_term(retval, proc_gc_pool(ctx));
-		result(make_tuple2(AI_DONE, retval1, proc_gc_pool(ctx)));
-	}
-	else
-	{
-		if (res == AI_YIELD)
-			result(res);
-		else
-		{
-			retval1 = marshal_term(retval, proc_gc_pool(ctx));
-			result(make_tuple2(res, retval1, proc_gc_pool(ctx)));
-		}
-	}
-
-	return AI_OK;
-}
-
-term_t bif_destroy_process1(term_t Pid, process_t *ctx)
-{
-	process_t *proc;
-	if (!is_pid(Pid))
-		return A_BADARG;
-	proc = proc_lookup(pid_serial(Pid));
-	if (proc)
-		proc_destroy(proc);
-	result(A_TRUE);
-	return AI_OK;
-}
-
-term_t bif_poll_ports1(term_t Time, process_t *ctx)
-{
-	//apr_time_t t1, t2;
-
-	apr_status_t rs;
-	apr_interval_time_t micros;
-
-	if (!is_int(Time))
-		return A_BADARG;
-	micros = int_value(Time);
-
-	//if (micros != 0)
-	//	printf("ports_poll for %ld\n", micros);
-
-	// XXX
-	//t1 = apr_time_now();
-
-	rs = ports_poll(micros);
-
-	//t2 = apr_time_now();
-
-	//if (t2 - t1 < micros)
-	//	printf("ports_poll slept for less then requested: %ld instead of %ld\n",
-	//		t2 - t1, micros);
-
-	if (rs && !APR_STATUS_IS_TIMEUP(rs))
-		return decipher_status(rs);
-	result(A_TRUE);
-	return AI_OK;
-}
-
-term_t bif_undefined_builtin0(process_t *ctx)
-{
-	return A_UNDEF;
-}
-
-// breakpoints, module x
-term_t bif_b1_0(process_t *ctx)
-{
-	result(A_TRUE);
-	return AI_OK;
-}
-
-term_t bif_b2_0(process_t *ctx)
-{
-	result(A_TRUE);
-	return AI_OK;
-}
-
-term_t bif_b3_0(process_t *ctx)
-{
-	result(A_TRUE);
-	return AI_OK;
-}
-
-term_t bif_b4_0(process_t *ctx)
-{
-	result(A_TRUE);
-	return AI_OK;
-}
-
-term_t bif_delete_module1(term_t Mod, process_t *ctx)
-{
-	if (!is_atom(Mod))
-		return A_BADARG;
-
-	if (code_base_delete(proc_code_base(ctx), Mod))
-		result(A_TRUE);
-	else
-		result(A_FALSE);
-
-	return AI_OK;
-}
-
-term_t bif_purge1(term_t Mod, process_t *ctx)
-{
-	return A_NOT_IMPLEMENTED;
-}
-
-term_t bif_soft_purge1(term_t Mod, process_t *ctx)
-{
-	apr_uint32_t mod_index;
-
-	if (!is_atom(Mod))
-		return A_BADARG;
-
-	mod_index = code_base_mod_index(proc_code_base(ctx), Mod, 1);
-	if (mod_index == MOD_INDEX_NONE)
-		result(A_FALSE);
-	else
-	{
-		if (proc_is_lingering(mod_index))
-			result(A_FALSE);
-
-		code_base_purge(proc_code_base(ctx), mod_index);
-		result(A_TRUE);
-	}
-
-	return AI_OK;
-}
-
-term_t bif_set_brk0_2(term_t Mod, term_t Off, process_t *ctx)
-{
-	apr_uint32_t mod_index;
-
-	if (!is_atom(Mod) || !is_int(Off))
-		return A_BADARG;
-
-	mod_index = code_base_mod_index(proc_code_base(ctx), Mod, 0);
-	if (mod_index == MOD_INDEX_NONE)
-		result(A_FALSE);
-	else
-	{
-		if (code_base_breakpoint_set(proc_code_base(ctx),
-			mod_index, int_value2(Off)))
-		  result(A_TRUE);
-		else
-		  result(A_FALSE);
-	}
-
-	return AI_OK;
-}
-
-term_t bif_unset_brk0_2(term_t Mod, term_t Off, process_t *ctx)
-{
-	apr_uint32_t mod_index;
-
-	if (!is_atom(Mod) || !is_int(Off))
-		return A_BADARG;
-
-	mod_index = code_base_mod_index(proc_code_base(ctx), Mod, 0);
-	if (mod_index == MOD_INDEX_NONE)
-		result(A_FALSE);
-	else
-	{
-		if (code_base_breakpoint_unset(proc_code_base(ctx),
-			mod_index, int_value2(Off)))
-		  result(A_TRUE);
-		else
-		  result(A_FALSE);
-	}
-
-	return AI_OK;
-}
-
-term_t bif_toggle_brk0_2(term_t Mod, term_t Off, process_t *ctx)
-{
-	apr_uint32_t mod_index;
-
-	if (!is_atom(Mod) || !is_int(Off))
-		return A_BADARG;
-
-	mod_index = code_base_mod_index(proc_code_base(ctx), Mod, 0);
-	if (mod_index == MOD_INDEX_NONE)
-		result(A_ERROR);
-	else
-	{
-		switch (code_base_breakpoint_toggle(proc_code_base(ctx),
-			mod_index, int_value2(Off)))
-		{
-		case -1:
-		  result(A_ERROR);
-		  break;
-		case 0:
-		  result(A_FALSE);
-		  break;
-		case 1:
-		  result(A_TRUE);
-		  break;
-		}
-	}
-
-	return AI_OK;
-}
-
-term_t bif_clear_brks0_0(process_t *ctx)
-{
-	int n = code_base_clear_breakpoints(proc_code_base(ctx));
-	result(intnum(n));
-	return AI_OK;
-}
-
-// EOF
+//EOF

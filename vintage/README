@@ -1,0 +1,74 @@
+teeterl is a lean portable Erlang.
+
+teeterl starts from a single executable file without any additional harness.
+
+teeterl is built using Apache Portable Runtime, a library tested on dozens
+of OSes and their flavours.
+
+teeterl borrows from industry-standard Erlang/OTP, especially when it comes
+to compiler front-end.
+
+PREREQUISITES
+
+teeterl requires APR 1.3.3 and APR-util 1.3.4 libraries installed on your
+system. The library is linked statically and thus not required when running
+your teeterl based application.
+
+The build process also requires Erlang/OTP installed (at least as recent
+as R12B-0). Again Erlang/OTP is needed for bootstrapping teeterl only. When
+built for the first time, it may be used to build itself.
+
+Note that currently only 32-bit systems are supported and the system will
+refuse to built on 64-bits.
+
+INSTALLATION
+
+teeterl is tested on Mac OSX (Leopard), Linux (Ubuntu) and Windows XP. Nothing
+should prevent it from building and running on other systems.
+
+1. Make sure that APR 1.3.3 and APR-util 1.3.4 are installed. Earlier versions
+will not do because of a handy apr_hash_count function needed by teeterl
+introduced only in 1.3.4. Jot down locations of APR library binaries and
+include files.
+
+2. Make sure Erlang/OTP is installed (version R12B-0 or later). Make note of
+paths to erl and erlc binaries.
+
+3. Check out teeterl from git://github.com/maximk/teeterl.git to a chosen
+directory.
+
+4. Edit Makefile and replace APR library and include files locations as well
+as paths of Erlang/OTP binaries.
+
+5. Run 'make all'.
+
+6. Wait a few minutes for the build to complete.
+
+HOW TO USE teeterl
+
+The output of the build process is twofold. The first and the most valuable
+piece is bin/teeterl.a library which may be utilized to create runnable teeterl-
+based applications. The second piece is bin/exec - an instance of such
+applications suitable for running certain Erlang functions.
+
+No new shiny shell or anything interactive at the moment. For interactivity
+you will need to download and install another project named spurl which is
+a web-based front-end to teeterl.
+
+The primary mode of operation on bin/exec is running the compiler:
+
+bin/exec x_compile files filename.erl output_dir
+
+'x_compile' is a module name,
+'files' is a function name,
+'filename.erl' is the file you want to compile
+'output_dir' is the directory where to put the result
+
+Result of such command is usually a series of error messages or, if you are
+a lucky one, then two files named 'filename.x' and 'filename.cx'. The latter
+is the one which is actually needed.
+
+To grasp how to make use of .cx files produced by the compiler please refer
+to the spurl project sources. In short you take a bunch of .cx sources, add
+a small main.c file, compile everything and link with teeterl.a and, voila,
+you have an executable with all your modules embedded. Just run it and have fun.

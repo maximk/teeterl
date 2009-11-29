@@ -1,0 +1,172 @@
+#
+# Standard atoms
+################
+#
+false
+true
+
+# hijack ! and ++
+! = ASEND__
+++ = APLUSPLUS__
+-- = AMINUSMINUS__
+
+# catch
+EXIT = AEXIT__
+
+# preloaded code selectors etc
+@ = AT__
+t
+b
+files
+source
+
+# startup
+init
+main
+
+# receive after infinity -> ok end
+infinity
+# receive exceptions
+timeout_value
+
+#process priorities
+normal
+high
+low
+
+# exception types
+error
+exit
+throw
+
+# common errors
+cancer
+badarg
+badarith
+undef
+not_purged
+badfile
+stale_fun
+
+# undef
+error_handler
+undefined_function
+
+#outlets
+tcp
+tcp_connected
+tcp_closed
+tcp_space
+expect
+require
+tcp_accepted
+accept
+
+# international mail
+postoffice
+envelope
+
+# get rid of these one day
+not_implemented
+
+# bif implementation
+ok
+any
+inet
+not_supported
+undefined
+module
+local
+context_switches
+garbage_collection
+io
+reductions
+proc_queues
+runtime
+wall_clock
+input
+output
+run
+wait
+timed_wait
+value
+
+#
+# APR error codes
+#
+anonymous
+badch
+child_done
+child_notdone
+detach
+eaboveroot
+eabsolute
+eacces
+eagain
+ebaddate
+ebadf
+ebadip
+ebadmask
+ebadpath
+ebusy
+econnaborted
+econnrefused
+econnreset
+edsoopen
+eexist
+eftype
+egeneral
+ehostunreach
+eincomplete
+einit
+einprogress
+eintr
+einval
+einvalsock
+emfile
+emismatch
+enametoolong
+enetdown
+enetunreach
+enfile
+enodir
+enoent
+enolock
+enomem
+enopoll
+enoproc
+enoshmavail
+enosocket
+enospc
+enostat
+enotdir
+enotempty
+enotenoughentropy
+enothdkey
+enothread
+enotime
+enotimpl
+enotsock
+epathwild
+epipe
+eproc_unknown
+erelative
+espipe
+esymnotfound
+etimedout
+exdev
+filebased
+inchild
+incomplete
+inparent
+keybased
+notdetach
+notfound
+timeup
+eof
+unknown
+
+# traces
+postmortem
+
+#EOF

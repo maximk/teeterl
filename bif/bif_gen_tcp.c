@@ -1,80 +1,54 @@
-/*
-* Copyright (c) 2009, Maxim Kharchenko
-* All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*     * Redistributions of source code must retain the above copyright
-*       notice, this list of conditions and the following disclaimer.
-*     * Redistributions in binary form must reproduce the above copyright
-*       notice, this list of conditions and the following disclaimer in the
-*       documentation and/or other materials provided with the distribution.
-*     * Neither the name of the author nor the names of his contributors
-*	    may be used to endorse or promote products derived from this software
-*		without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY Maxim Kharchenko ''AS IS'' AND ANY
-* EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL Maxim Kharchenko BE LIABLE FOR ANY
-* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+//
+//
+//
 
-#include "bif.h"
+#include "bifimpl.h"
 
 #include <apr_network_io.h>
 
-#include "port.h"
-#include "errors.h"
+#include "outlet_mall.h"
+#include "scheduler.h"
 
-term_t bif_controlling_process2(term_t Sock, term_t Pid, process_t *ctx)
+term_t bif_controlling_process2(term_t Sock, term_t Pid, proc_t *proc)
 {
 	// controlling process changes the process which can send to the socket
 	// the other owner which receives closed messages, etc remains intact
 
-	port_t *port;
+	outlet_t *outlet;
 
-	if (!is_port(Sock) || !is_pid(Pid))
-		return A_BADARG;
+	if (!is_short_oid(Sock) || !is_short_pid(Pid))
+		bif_bad_arg0();
 
-	port = port_lookup(prp_serial(Sock));
-	if (port != 0)
+	outlet = outlet_mall_lookup(proc->teevm->mall, oid_serial(Sock));
+	if (outlet != 0)
 	{
 		//TODO: check for permission
-		port->owner_out = marshal_term(Pid, port->xp);
+		outlet->owner_out = scheduler_lookup(proc->teevm->scheduler, pid_serial(Pid));
 	}
-	result(A_OK);
-	return AI_OK;
 
-	//return A_NOT_SUPPORTED;
+	return A_OK;
 }
 
-term_t bif_connect_socket4(term_t RemIP, term_t RemPort, term_t LocIP, term_t LocPort, process_t *ctx)
+term_t bif_connect_socket4(term_t RemIP, term_t RemPort, term_t LocIP, term_t LocPort, proc_t *proc)
 {
 	apr_status_t rs;
 	apr_pool_t *p;
 	apr_sockaddr_t *sa1, *sa2;
 	apr_socket_t *socket;
-	port_t *port;
-	term_t id;
+	outlet_t *outlet;
 
 	const char *host1, *host2;
 	apr_port_t port1, port2;
 
 	if (!is_binary(RemIP) || !is_int(RemPort))
-		return A_BADARG;
+		bif_bad_arg0();
 	if (LocIP != A_ANY && !is_binary(LocIP))
-		return A_BADARG;
+		bif_bad_arg(LocIP);
 	if (!is_int(LocPort))
-		return A_BADARG;
+		bif_bad_arg(LocPort);
 
-	host1 = (const char *)bin_data(RemIP);
-	host2 = (LocIP == A_ANY) ?0 :(const char *)bin_data(LocIP);
+	host1 = (const char *)peel(RemIP)->binary.data;
+	host2 = (LocIP == A_ANY) ?0 :(const char *)peel(LocIP)->binary.data;
 	port1 = (apr_port_t)int_value(RemPort);
 	port2 = (apr_port_t)int_value(LocPort);
 
@@ -98,45 +72,42 @@ term_t bif_connect_socket4(term_t RemIP, term_t RemPort, term_t LocIP, term_t Lo
 	if (rs != 0)
 	{
 		apr_pool_destroy(p);
-		return decipher_status(rs);
+		bif_exception(decipher_status(rs));
 	}
 
-	port = port_socket_make(socket, 1);	//construct a connecting port, takes care of pool p
+	outlet = ol_socket_make(socket, 1);	//construct a connecting outlet, takes care of pool p
 
-	//set initial port owner
-	port->owner_in = port->owner_out = proc_pid(ctx, port->xp);
+	//set initial outlet owner
+	outlet->owner_in = outlet->owner_out = proc;
 
-	//put port to polling ring
-	port_register(port);
+	//put outlet to polling ring
+	outlet_mall_allot(proc->teevm->mall, outlet);
 
-	id = make_port(my_node, port->key, my_creation, proc_gc_pool(ctx));
-	result(id);
-	return AI_OK;
+	return outlet_id(outlet);
 }
 
-term_t bif_listen_socket2(term_t LocIP, term_t LocPort, process_t *ctx)
+term_t bif_listen_socket2(term_t LocIP, term_t LocPort, proc_t *proc)
 {
 	apr_status_t rs;
 	apr_pool_t *p;
 	apr_sockaddr_t *sa;
 	apr_socket_t *socket;
-	port_t *port;
-	term_t id;
+	outlet_t *outlet;
 
 	const char *host;
-	apr_port_t tcp_port;
+	apr_port_t port;
 
 	if (LocIP != A_ANY && !is_binary(LocIP))
 		return A_BADARG;
 	if (!is_int(LocPort))
 		return A_BADARG;
 
-	host = (LocIP == A_ANY) ?0 :(const char *)bin_data(LocIP);
-	tcp_port = (apr_port_t)int_value(LocPort);
+	host = (LocIP == A_ANY) ?0 :(const char *)peel(LocIP)->binary.data;
+	port = (apr_port_t)int_value(LocPort);
 
 	apr_pool_create(&p, 0);
 
-	rs = apr_sockaddr_info_get(&sa, host, APR_INET, tcp_port, 0, p);
+	rs = apr_sockaddr_info_get(&sa, host, APR_INET, port, 0, p);
 	if (rs == 0)
 		rs = apr_socket_create(&socket,
 			APR_INET, SOCK_STREAM, APR_PROTO_TCP, p); //only APR_INET is supported, not APR_INET6
@@ -150,26 +121,19 @@ term_t bif_listen_socket2(term_t LocIP, term_t LocPort, process_t *ctx)
 	if (rs != 0)
 	{
 		apr_pool_destroy(p);
-		return decipher_status(rs);
+		bif_exception(decipher_status(rs));
 	}
 
-	port = port_listener_make(socket);	//takes care of pool p
+	outlet = ol_listener_make(socket, proc->teevm);	//takes care of pool p
 
 	//add to poll ring
-	port_register(port);
+	outlet_mall_allot(proc->teevm->mall, outlet);
 
-	//set initial port owner
-	//
-	//keep owners underfines so that socket does not close
+	//keep owners underfined so that socket does not close
 	//when the process exits -- other processes may accept
 	//connections using listening socket
-	//
-	//port->owner_in = port->owner_out = proc_pid(ctx, port->xp);
-	port->owner_in = port->owner_out = A_UNDEFINED;
 
-	id = make_port(my_node, port->key, my_creation, proc_gc_pool(ctx));
-	result(id);
-	return AI_OK;
+	return outlet_id(outlet);
 }
 
 //EOF

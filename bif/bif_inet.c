@@ -25,34 +25,37 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "bif.h"
+#include "bifimpl.h"
 
 #include <apr_network_io.h>
 
-#include "port.h"
-#include "errors.h"
+#include "outlet_mall.h"
 #include "getput.h"
+#include "list.h"
 
-term_t bif_getaddrs0_2(term_t Addr, term_t Family, process_t *ctx)
+// inet:getaddrs0/2 [4]
+term_t bif_getaddrs0_2(term_t Addr, term_t Family, proc_t *proc)
 {
 	apr_status_t rs;
 	apr_pool_t *tmp;
 	apr_sockaddr_t *sa;
 	const char *host;
+	term_t addrs = nil;
 
 	if (!is_binary(Addr) || !is_atom(Family))
-		return A_BADARG;
+		bif_bad_arg0();
 
 	if (Family != A_INET)
-		return A_NOT_SUPPORTED;
+		bif_exception(A_NOT_SUPPORTED);
 
-	host = (const char *)bin_data(Addr);	//null-terminated by caller
+	host = (const char *)peel(Addr)->binary.data;	//null-terminated by caller
 
 	apr_pool_create(&tmp, 0);
 	rs = apr_sockaddr_info_get(&sa, host, APR_INET, 0, 0, tmp);
 	if (rs == 0)
 	{
-		term_t r = nil, cons = nil;
+		term_t first = nil;
+		term_t last = nil;
 
 		while (sa)
 		{
@@ -66,40 +69,26 @@ term_t bif_getaddrs0_2(term_t Addr, term_t Family, process_t *ctx)
 			PUT32_LE(qs, ia.s_addr);
 #endif
 
-			ip = make_tuple4(intnum(qs[0]),
-				intnum(qs[1]),
-				intnum(qs[2]),
-				intnum(qs[3]),
-				proc_gc_pool(ctx));
+			ip = heap_tuple4(proc->heap,
+				tag_int(qs[0]),
+				tag_int(qs[1]),
+				tag_int(qs[2]),
+				tag_int(qs[3]));
 
-			lst_add(r, cons, ip, proc_gc_pool(ctx));
+			cons_up(first, last, ip, proc->heap);
 
 			sa = sa->next;
 		}
 
-		result(r);
+		addrs = first;
 	}
 
 	apr_pool_destroy(tmp);
 
 	if (rs != 0)
-		return decipher_status(rs);
+		bif_exception(decipher_status(rs));
 
-	return AI_OK;
-}
-
-term_t bif_close1(term_t Sock, process_t *ctx)
-{
-	port_t *port;
-
-	if (!is_port(Sock))
-		return A_BADARG;
-
-	port = port_lookup(prp_serial(Sock));
-	if (port)
-		port_close(port);
-	result(A_OK);
-	return AI_OK;
+	return addrs;
 }
 
 //EOF

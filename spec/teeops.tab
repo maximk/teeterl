@@ -1,0 +1,333 @@
+##
+##
+##
+#
+##
+## On 64-bit system each operand takes twice the space
+##
+## i		signed integer		i1 -> i2 -> t
+## u		unsigned integer	u1 -> u2 -> t
+##
+## s		stack index			s1 -> s2 -> s
+#
+## [i,u,s]1	unit size (8-bit on 32-bit systems, and 16-bit on 64-bit systems)
+## [i,u,s]2	double size
+#
+## a		atom index (<256), always unit size
+## n		small constant (usually, arity), always unit size
+## r		register index (<256), always unit size
+#
+## l		label, always full size
+## b		bif entry, always full size
+## t		literal term, always full size
+#
+# ~ in the beginning of opcode signifies a terminal op
+#
+
+move r/dst, r/src
+move s2/dst, r/src
+move s/dst, r/src
+move r/dst, s2/src
+move r/dst, s/src
+
+swap r, r
+swap r, s2
+swap r, s
+
+set r, i2
+set r, a
+set r, t
+
+add r, r, r
+add r, r, i1
+add r, r, t
+
+mult r, r, r
+mult r, r, i1
+mult r, r, t
+
+sub r, r, r
+sub r, r, i1
+sub r, r, t
+sub r, i1, r
+sub r, t, r
+
+div r, r, r
+idiv r, r, r
+mod r, r, r
+
+neg r, r
+bnot r, r
+not r, r
+
+band r, r, r
+band r, r, i1
+band r, r, t
+
+and r, r, r
+
+bor r, r, r
+bor r, r, i1
+bor r, r, t
+
+or r, r, r
+
+bxor r, r, r
+bxor r, r, i1
+bxor r, r, t
+
+xor r, r, r
+
+bsl r, r, r
+bsr r, r, r
+
+abs r, r
+trunc r, r
+round r, r
+float r, r
+
+is_atom r, l/wrong_type
+is_binary r, l/wrong_type
+is_float r, l/wrong_type
+is_function r, l/wrong_type
+is_function r, n/arity, l/wrong_type
+is_integer r, l/wrong_type
+is_list r, l/wrong_type
+is_cons r, l/wrong_type
+is_nil r, l/wrong_type
+is_not_nil r, l/nil
+is_number r, l/wrong_type
+is_pid r, l/wrong_type
+is_oid r, l/wrong_type
+is_tuple r, l/wrong_type
+
+is_tuple_of_arity r, u1, l/wrong_type
+is_tuple_of_arity r, t, l/wrong_type
+
+is_record r, a, u1/arity, l/wrong_type
+is_record r, a, t/arity, l/wrong_type
+is_record r, t, u2/arity, l/wrong_type
+is_record r, t, t/arity, l/wrong_type
+
+is_atom r, r/test_me
+is_binary r, r/test_me
+is_float r, r/test_me
+is_function r, r/test_me
+is_function r, r/test_me, n/arity
+is_integer r, r/test_me
+is_list r, r/test_me
+is_cons r, r/test_me
+is_nil r, r/test_me
+is_not_nil r, r/test_me
+is_number r, r/test_me
+is_pid r, r/test_me
+is_oid r, r/test_me
+is_tuple r, r/test_me
+
+eq r, r, l/not_equal
+eq r, i2, l/not_equal
+eq r, a, l/not_equal
+eq r, t, l/not_equal
+
+neq r, r, l/equal
+neq r, i2, l/equal
+neq r, a, l/equal
+neq r, t, l/equal
+
+lesseq r, r, l/not_less_or_equal
+lesseq r, i2, l/not_less_or_equal
+lesseq r, a, l/not_less_or_equal
+lesseq r, t, l/not_less_or_equal
+
+moreeq r, r, l/not_more_or_equal
+moreeq r, i2, l/not_more_or_equal
+moreeq r, a, l/not_more_or_equal
+moreeq r, t, l/not_more_or_equal
+
+less r, r, l/not_less
+less r, i2, l/not_less
+less r, a, l/not_less
+less r, t, l/not_less
+
+more r, r, l/not_more
+more r, i2, l/not_more
+more r, a, l/not_more
+more r, t, l/not_more
+
+is_true r, l/not_true
+is_false r, l/not_false
+
+eq r, r, r
+eq r, r, i1
+eq r, r, a
+eq r, r, t
+
+neq r, r, r
+neq r, r, i1
+neq r, r, a
+neq r, r, t
+
+lesseq r, r, r
+lesseq r, r, i1
+lesseq r, r, a
+lesseq r, r, t
+
+moreeq r, r, r
+moreeq r, r, i1
+moreeq r, r, a
+moreeq r, r, t
+
+less r, r, r
+less r, r, i1
+less r, r, a
+less r, r, t
+
+more r, r, r
+more r, r, i1
+more r, r, a
+more r, r, t
+
+frame n/arity, u1/frame_size, u1/heap_needed
+frame n/arity, u2/frame_size, t/heap_needed
+frame n/arity, t/frame_size, u2/heap_needed
+
+~enter a/module, a/function, n/arity
+~enter a/module, t/function, n/arity
+~enter t/module, a/function, n/arity
+~enter t/module, t/function, n/arity
+~enter r/module, r/function, n/arity
+~enter l/entry
+
+~enter_fun n/arity, r/fun
+~enter_bif n/arity, b/entry
+~enter_apply
+
+~jump l/where
+
+call a/module, a/function, n/arity
+call a/module, t/function, n/arity
+call t/module, a/function, n/arity
+call t/module, t/function, n/arity
+call r/module, r/function, n/arity
+call l/entry
+
+call_fun n/arity, r/fun
+call_bif n/arity, b/entry
+call_apply
+
+~return
+
+make_fun r/retval, n/arity, t/index, t/unique, r/frozen
+make_fun_nil r/retval, n/arity, t/index, t/unique
+
+~match_fail a/where, r/value
+~match_fail t/where, r/value
+~match_fail a/where
+~match_fail t/where
+
+consup r/cons, r/head, r/tail
+consup r/cons, a/head, r/tail
+consup r/cons, i1/head, r/tail
+consup r/cons, t/head, r/tail
+consup r/cons, r/head, t/tail
+nil_consup r/cons, r/tail
+consup_nil r/cons, r/head
+uncons r/cons, r/head, r/tail
+hd r/head, r/cons
+tl r/tail, r/cons
+list_len r/length, r/list
+nil r
+
+tuple r, u2/arity
+tuple r, t/arity
+
+tuple_size r, u2/arity, l/wrong_arity
+tuple_size r, t/arity, l/wrong_arity
+tuple_size r/size, r/tuple
+
+dsetel r/tuple, u1/index, r/element
+dsetel r/tuple, t/index, r/element
+dsetel r/tuple, u1/index, i1/element
+dsetel r/tuple, u1/index, a/element
+dsetel r/tuple, t/index, t/element
+
+dsetel_nil r/tuple, u2/index
+dsetel_nil r/tuple, t/index
+
+getel r/element, r/index, r/tuple
+getel r/element, u1/index, r/tuple
+getel r/element, t/index, r/tuple
+
+# argument checking getel
+getel2 r/element, r/index, r/tuple
+
+gen_size r, r/tuple_or_binary
+
+recv_reset_inf
+recv_reset r/timeout
+recv_reset u2/timeout
+recv_reset t/timeout
+recv_next r/message, n/used_regs, l/after
+recv_next r/message, n/used_regs
+recv_accept
+
+self r
+node r
+node r/node, r/id
+
+binary r, r/bit_size
+binary r, u2/bit_size
+binary r, t/bit_size
+
+bit_size r/size, r/binary
+byte_size r/size, r/binary
+
+# a special combined commands for binary construction
+add_mult r/updated, r/value, n/unit
+add_bit_size r/updated, r/binary
+
+bspl_i r/binary, r/integer, r/usize, n/unit, n/options
+bspl_i r/binary, i2, r/usize, n/unit, n/options
+bspl_i r/binary, t, r/usize, n/unit, n/options
+
+bspl_i r/binary, r/integer, t/size, n/options
+bspl_i r/binary, i1, t/size, n/options
+bspl_i r/binary, t, u1/size, n/options
+bspl_i r/binary, i2, u2/size, n/options
+bspl_i r/binary, t, t/size, n/options
+
+bspl_f r/binary, r/float, r/usize, n/unit, n/options
+bspl_f r/binary, t/float, r/usize, n/unit, n/options
+bspl_f r/binary, r/float, t/size, n/options
+bspl_f r/binary, t/float, u1/size, n/options
+bspl_f r/binary, t/float, t/size, n/options
+
+bspl_b r/binary, r/binary, r/usize, n/unit, n/options
+bspl_b r/binary, t, r/usize, n/unit, n/options
+
+bspl_b r/binary, r/binary, t/size, n/options
+bspl_b r/binary, t, u1/size, n/options
+bspl_b r/binary, t, t/size, n/options
+
+bspl_b_all r/binary, r/binary, n/options
+
+bchip_i r/chip, r/rest, r/binary, r/size, n/unit, n/options, l/too_short
+bchip_i r/chip, r/rest, r/binary, u2/size, n/options, l/too_short
+bchip_i r/chip, r/rest, r/binary, t/size, n/options, l/too_short
+
+bchip_f r/chip, r/rest, r/binary, r/size, n/unit, n/options, l/too_short
+bchip_f r/chip, r/rest, r/binary, u2/size, n/options, l/too_short
+bchip_f r/chip, r/rest, r/binary, t/size, n/options, l/too_short
+
+bchip_b r/chip, r/rest, r/binary, r/size, n/unit, n/options, l/too_short
+bchip_b r/chip, r/rest, r/binary, u2/size, n/options, l/too_short
+bchip_b r/chip, r/rest, r/binary, t/size, n/options, l/too_short
+
+bchip_b_all r/chip, r/binary, n/options
+
+is_empty_binary r/binary, l/not_empty
+
+catch l/failure
+drop_catch
+
+#EOF

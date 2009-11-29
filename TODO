@@ -1,0 +1,14 @@
+- {A,B} = {[],[]} does not compile
+- when binary is matched it is first copied to a new register
+- pieces of matched binary are cleared out prematurely
+- on binary allocation the ultimate parent should be traced
+- examine whether it is worthwhile to have apr_pollset_t allocated once; also apr_pollcb_t
+- binary_to_term fails on nested oddball binaries
+- unused registers can be sorted on clear_dead; or may be not; check compilation times etc
+- one register may be shaved in code for make_fun; in some cases
+- register touched by a local function can be tracked; probably not worthwhile
+- implement label-Op-label-Op optimization; happens many a time; only terminal ops
+- mp_set_int takes long argument and make assumption that sizeof(long) > sizeof(int)
+- compile APR without threads; no APR_HAS_THREADS
+- exceptions leak from guards
+- update optimization taking into account possibility of {source,_,_}

@@ -1,0 +1,82 @@
+#
+#	lists
+#
+
+lists:keymember(Key,N,TupleList)	bif_keymember3
+lists:keysearch(Key,N,TupleList)	bif_keysearch3
+lists:keyfind(Key,N,TupleList)		bif_keyfind3
+lists:member(Elem,List)				bif_member2
+lists:reverse(Ls,Hs)				bif_reverse2
+
+erlang:++(List1,List2)				bif_plusplus2
+erlang:--(List1,List2)				bif_minusminus2
+
+erlang:make_tuple(N,InitValue)				bif_make_tuple2
+erlang:make_tuple(N,DefValue,InitList)		bif_make_tuple3
+erlang:setelement(N,Tuple,Value)			bif_setelement3
+erlang:append_element(Tuple,Elem)			bif_append_element2
+erlang:tuple_to_list(Tuple)					bif_tuple_to_list1
+erlang:list_to_tuple(List)					bif_list_to_tuple1
+
+erlang:binary_to_term(Bin)				bif_binary_to_term1
+erlang:term_to_binary(Term)				bif_term_to_binary1
+erlang:binary_to_list(Bin)				bif_binary_to_list1
+erlang:binary_to_list(Bin,Start,Stop)	bif_binary_to_list3
+erlang:list_to_binary(List)				bif_list_to_binary1
+
+erlang:atom_to_list(Atom)			bif_atom_to_list1
+erlang:float_to_list(Float)			bif_float_to_list1
+
+erlang:register(RegName,PidOid)		bif_register2
+erlang:unregister(RegName)			bif_unregister1
+erlang:whereis(RegName)				bif_whereis1
+
+erlang:spawn(Module,Function,Args)	bif_spawn3
+erlang:spawn(Fun)					bif_spawn1
+erlang:!(Pid,Msg)					bif_send_msg2
+erlang:error(Reason)				bif_error1
+erlang:error(Reason,Args)			bif_error2
+erlang:throw(Reason)				bif_throw1
+erlang:exit(Reason)					bif_exit1
+erlang:exit(Pid,Reason)				bif_exit2
+
+erlang:put(Key,Value)		bif_put2
+erlang:erase()				bif_erase0
+erlang:erase(Key)			bif_erase1
+erlang:get()				bif_get0
+erlang:get(Key)				bif_get1
+
+erlang:now()			bif_now0
+erlang:date()			bif_date0
+erlang:time()			bif_time0
+erlang:localtime()		bif_localtime0
+erlang:universaltime()	bif_universaltime0
+
+erlang:property(Term,Opt)		bif_property2
+erlang:property(Term,Opt,Val)	bif_property3
+
+erlang:close(Oid)				bif_close1
+
+erlang:statistics(What)		bif_statistics1
+
+erlang:display(Iolist)		bif_display1
+
+erlang:daemonize()			bif_daemonize0
+
+code:is_loaded(Module)				bif_is_loaded1
+code:load_module(Where)				bif_load_module1
+
+code:source_line(Module,Offset)			bif_source_line2
+code:module_offset(Module,File,Line)	bif_module_offset3
+
+inet:getaddrs0(Addr,Family)			bif_getaddrs0_2
+
+gen_tcp:controlling_process(Sock,Pid)					bif_controlling_process2
+gen_tcp:connect_socket(RemIP,RemPort,LocIP,LocPort)		bif_connect_socket4
+gen_tcp:listen_socket(LocIP,LocPort)					bif_listen_socket2
+
+file:open0(FileName,Mode,Perms)			bif_open0_3
+file:read0(File,Len)					bif_read0_2
+file:write0(File,Bin)					bif_write0_2
+
+#EOF
