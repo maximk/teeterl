@@ -6,18 +6,18 @@ of OSes and their flavours.
 teeterl borrows from industry-standard Erlang/OTP, especially when it comes
 to compiler front-end.
 
-This is an new major version of teeterl. Quite immature. The previous version
-lives in vintage folder. Consult README file found there.
+This is a new major version of teeterl. Quite immature. The previous version
+lives in the vintage folder. Consult README file found there.
 
 The current version is only able to run a couple of test suites but the
 results of preliminary performance testing indicate that the current version
 is 3-4 times swifter than the previous one.
 
-The current version is being developed under Windows XP. Under Windows XP
-using Visual Studio 5.0+ teeterl can be built from the provided project
-file. Expect to resolve a few dependencies manually. After clean built, just
+The current version is being developed under Windows XP. Using Visual
+Studio 5.0+ teeterl can be built from the provided project file. Expect to
+resolve a few dependencies manually. After clean built, just
 hit F5 and point your browser to http://localhost:9090 and rudimentary
-teeterl interface should show up. At that point it would be obvious that
+teeterl interface will show up. At that point it would be obvious that
 there is much to be done for the new teeterl.
 
 If you want to feel more in control about VM internals and think that
