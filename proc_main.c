@@ -25,6 +25,9 @@ void report_and_exit(proc_t *proc);
 
 term_t proc_main(proc_t *proc, module_t *module, codel_t *ip, int argc, term_t argv[])
 {
+
+#if NUM_FAST_REGS == 2
+
 	register term_t r0, r1;
 	term_t rs[NUM_REGS - NUM_FAST_REGS];
 
@@ -35,6 +38,13 @@ do { \
 	else if (x == 1) r1 = t; \
 	else rs[x-2] = t; \
 } while (0)
+#elif NUM_FAST_REGS == 0
+
+	term_t rs[NUM_REGS];
+
+#define get_reg(x)		rs[x]
+#define set_reg(x, t)	do { rs[x] = t; } while (0)
+#endif
 
 	frame_t *my_frame = (frame_t *)(proc->stack_node->first_avail - sizeof(frame_t));
 
@@ -94,12 +104,16 @@ do { \
 #define bad_arith(v)	exception(SLICE_RESULT_ERROR, A_BADARITH)
 #define bad_arith0()	exception(SLICE_RESULT_ERROR, A_BADARITH)
 
+#if NUM_FAST_REGS == 2
 	if (argc > 0)
 		r0 = argv[0];
 	if (argc > 1)
 		r1 = argv[1];
 	if (argc > NUM_FAST_REGS)
 		memcpy(rs, argv + NUM_FAST_REGS, (argc - NUM_FAST_REGS)*sizeof(term_t));
+#elif NUM_FAST_REGS == 0
+	memcpy(rs, argv, argc*sizeof(term_t));
+#endif
 
 dispatch:
 switch(ip[0].n & 255)
@@ -2192,9 +2206,9 @@ op_enter:
 			cons_up(first, last, v, proc->heap);
 		}
 
-		r0 = q1;
-		r1 = q2;
-		rs[0] = first;
+		set_reg(0, q1);
+		set_reg(1, q2);
+		set_reg(2, first);
 	}
 	else
 	{
@@ -2310,18 +2324,18 @@ case OP_ENTER_BIF_N_B:
 	bifN_t entry = ip[1].bif;
 	switch (n)
 	{
-	case 0: r0 = ((bif0_t)entry)(proc); break;
-	case 1: r0 = ((bif1_t)entry)(r0, proc); break;
-	case 2: r0 = ((bif2_t)entry)(r0, r1, proc); break;
-	case 3: r0 = ((bif3_t)entry)(r0, r1, rs[0], proc); break;
-	case 4: r0 = ((bif4_t)entry)(r0, r1, rs[0], rs[1], proc); break;
-	case 5: r0 = ((bif5_t)entry)(r0, r1, rs[0], rs[1], rs[2], proc); break;
-	case 6: r0 = ((bif6_t)entry)(r0, r1, rs[0], rs[1], rs[2], rs[3], proc); break;
-	case 7: r0 = ((bif7_t)entry)(r0, r1, rs[0], rs[1], rs[2], rs[3], rs[4], proc); break;
-	case 8: r0 = ((bif8_t)entry)(r0, r1, rs[0], rs[1], rs[2], rs[3], rs[4], rs[5], proc); break;
+	case 0: set_reg(0, ((bif0_t)entry)(proc)); break;
+	case 1: set_reg(0, ((bif1_t)entry)(get_reg(0), proc)); break;
+	case 2: set_reg(0, ((bif2_t)entry)(get_reg(0), get_reg(1), proc)); break;
+	case 3: set_reg(0, ((bif3_t)entry)(get_reg(0), get_reg(1), get_reg(2), proc)); break;
+	case 4: set_reg(0, ((bif4_t)entry)(get_reg(0), get_reg(1), get_reg(2), get_reg(3), proc)); break;
+	case 5: set_reg(0, ((bif5_t)entry)(get_reg(0), get_reg(1), get_reg(2), get_reg(3), get_reg(4), proc)); break;
+	case 6: set_reg(0, ((bif6_t)entry)(get_reg(0), get_reg(1), get_reg(2), get_reg(3), get_reg(4), get_reg(5), proc)); break;
+	case 7: set_reg(0, ((bif7_t)entry)(get_reg(0), get_reg(1), get_reg(2), get_reg(3), get_reg(4), get_reg(5), get_reg(6), proc)); break;
+	case 8: set_reg(0, ((bif8_t)entry)(get_reg(0), get_reg(1), get_reg(2), get_reg(3), get_reg(4), get_reg(5), get_reg(6), get_reg(7), proc)); break;
 	}
 
-	if (r0 == noval)
+	if (get_reg(0) == noval)
 		exception0();		//result is filled in appropriately
 
 	goto return_now;		// TODO: fall-through to OP_RETURN
@@ -2340,9 +2354,9 @@ case OP_ENTER_APPLY:
 		module = code_base_lookup(proc->teevm->base, A_ERROR_HANDLER);
 		ip = module_lookup(module, A_UNDEFINED_FUNCTION, 3);
 
-		r0 = m;
-		r1 = f;
-		rs[0] = a;
+		set_reg(0, m);
+		set_reg(1, f);
+		set_reg(2, a);
 	}
 	else
 	{
@@ -2404,9 +2418,9 @@ op_call:
 			cons_up(first, last, v, proc->heap);
 		}
 
-		r0 = q1;
-		r1 = q2;
-		rs[0] = first;
+		set_reg(0, q1);
+		set_reg(1, q2);
+		set_reg(2, first);
 	}
 	else
 	{
@@ -2558,18 +2572,18 @@ case OP_CALL_BIF_N_B:
 	bifN_t entry = ip[1].bif;
 	switch (n)
 	{
-	case 0: r0 = ((bif0_t)entry)(proc); break;
-	case 1: r0 = ((bif1_t)entry)(r0, proc); break;
-	case 2: r0 = ((bif2_t)entry)(r0, r1, proc); break;
-	case 3: r0 = ((bif3_t)entry)(r0, r1, rs[0], proc); break;
-	case 4: r0 = ((bif4_t)entry)(r0, r1, rs[0], rs[1], proc); break;
-	case 5: r0 = ((bif5_t)entry)(r0, r1, rs[0], rs[1], rs[2], proc); break;
-	case 6: r0 = ((bif6_t)entry)(r0, r1, rs[0], rs[1], rs[2], rs[3], proc); break;
-	case 7: r0 = ((bif7_t)entry)(r0, r1, rs[0], rs[1], rs[2], rs[3], rs[4], proc); break;
-	case 8: r0 = ((bif8_t)entry)(r0, r1, rs[0], rs[1], rs[2], rs[3], rs[4], rs[5], proc); break;
+	case 0: set_reg(0, ((bif0_t)entry)(proc)); break;
+	case 1: set_reg(0, ((bif1_t)entry)(get_reg(0), proc)); break;
+	case 2: set_reg(0, ((bif2_t)entry)(get_reg(0), get_reg(1), proc)); break;
+	case 3: set_reg(0, ((bif3_t)entry)(get_reg(0), get_reg(1), get_reg(2), proc)); break;
+	case 4: set_reg(0, ((bif4_t)entry)(get_reg(0), get_reg(1), get_reg(2), get_reg(3), proc)); break;
+	case 5: set_reg(0, ((bif5_t)entry)(get_reg(0), get_reg(1), get_reg(2), get_reg(3), get_reg(4), proc)); break;
+	case 6: set_reg(0, ((bif6_t)entry)(get_reg(0), get_reg(1), get_reg(2), get_reg(3), get_reg(4), get_reg(5), proc)); break;
+	case 7: set_reg(0, ((bif7_t)entry)(get_reg(0), get_reg(1), get_reg(2), get_reg(3), get_reg(4), get_reg(5), get_reg(6), proc)); break;
+	case 8: set_reg(0, ((bif8_t)entry)(get_reg(0), get_reg(1), get_reg(2), get_reg(3), get_reg(4), get_reg(5), get_reg(6), get_reg(7), proc)); break;
 	}
 
-	if (r0 == noval)
+	if (get_reg(0) == noval)
 		exception0();		//result is filled in
 
 	next(2);
@@ -2595,9 +2609,9 @@ case OP_CALL_APPLY:
 		module = code_base_lookup(proc->teevm->base, A_ERROR_HANDLER);
 		ip = module_lookup(module, A_UNDEFINED_FUNCTION, 3);
 
-		r0 = m;
-		r1 = f;
-		rs[0] = a;
+		set_reg(0, m);
+		set_reg(1, f);
+		set_reg(2, a);
 	}
 	else
 	{
@@ -2650,7 +2664,7 @@ return_now:		// from enter_bif
 		proc->result.what = SLICE_RESULT_DONE;
 		proc->result.reason = A_NORMAL;
 
-		proc->capsule.registers[0] = r0;
+		proc->capsule.registers[0] = get_reg(0);
 		goto schedule;
 	}
 
@@ -3921,10 +3935,12 @@ schedule:
 		proc->catches->nelts > 0)
 	{
 		catch_t *cat = (catch_t *)apr_array_pop(proc->catches);
+		term_t t;
 		if (proc->result.what == SLICE_RESULT_ERROR)
-			r0 = heap_tuple2(proc->heap, AEXIT__, proc->result.reason);
+			t = heap_tuple2(proc->heap, AEXIT__, proc->result.reason);
 		else // throw
-			r0 = proc->result.reason;
+			t = proc->result.reason;
+		set_reg(0, t);
 
 		// unwind call stack; taking care of heap_needed counters
 		while ((char *)my_frame
@@ -3965,11 +3981,6 @@ schedule:
 		// may be waiting on the queues, report them
 
 		exit(0);
-	}
-
-	if (proc->capsule.arity > 255)
-	{
-		int a = 1;
 	}
 
 	for (i = 0; i < proc->capsule.arity; i++)
