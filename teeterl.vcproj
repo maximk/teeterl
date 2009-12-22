@@ -160,9 +160,6 @@
 				RelativePath=".\compiler\tt_compile.erl">
 			</File>
 			<File
-				RelativePath=".\compiler\tt_parse.yrl">
-			</File>
-			<File
 				RelativePath=".\compiler\v3_life.hrl">
 			</File>
 		</Filter>

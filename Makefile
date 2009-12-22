@@ -141,15 +141,15 @@ modbin.inc: $E/mods_gen.beam $(MODS)
 $B/teeterl.exe:	$(OBJ) $(XOBJ)
 	$(LINK) $(LDOPTS) /out:"$@" $(OBJ) $(XOBJ) $(APRLIBS) $(STDLIBS)
 
-$C/tt_parse.erl: $C/tt_parse.yrl $E/cli_run.beam
-	$(ERL) -pa $E -run cli_run exec1 yecc file $C/tt_parse.yrl -run init stop -noshell
+$C/erl_parse.erl: $C/erl_parse.yrl $E/cli_run.beam
+	$(ERL) -pa $E -run cli_run exec1 yecc file $C/erl_parse.yrl -run init stop -noshell
 #
 #	Under observation: comment out when done
 #
 #$X/navel.cx: mod/navel.erl $(COMP)
 #	$(ERL) -pa $E -run tt_compile files_outdir_dopjop mod/navel.erl $X -run init stop -noshell
 	
-all:		$(COMP) $(OBJ) $(TESTS) $B/teeterl.exe $C/tt_parse.erl
+all:		$(COMP) $(OBJ) $(TESTS) $B/teeterl.exe $C/erl_parse.erl
 
 .SUFFIXES:: .erl .c .cx .x
 
