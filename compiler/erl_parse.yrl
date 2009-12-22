@@ -26,7 +26,7 @@ attribute attr_val
 function function_clauses function_clause
 clause_args clause_guard clause_body
 expr expr_100 expr_150 expr_160 expr_200 expr_300 expr_400 expr_500
-expr_600 expr_700 expr_900
+expr_600 expr_700 expr_800 expr_900
 expr_max
 list tail
 list_comprehension lc_expr lc_exprs
@@ -244,18 +244,16 @@ expr_600 -> expr_700 : '$1'.
 
 expr_700 -> function_call : '$1'.
 expr_700 -> record_expr : '$1'.
-expr_700 -> expr_900 : '$1'.
+expr_700 -> expr_800 : '$1'.
 
-%expr_800 -> expr_900 ':' expr_max :
-%	{remote,?line('$2'),'$1','$3'}.
-%expr_800 -> expr_900 : '$1'.
+expr_800 -> expr_900 ':' expr_max :
+	{remote,?line('$2'),'$1','$3'}.
+expr_800 -> expr_900 : '$1'.
 
 %expr_900 -> '.' atom1 :
 %	{record_field,?line('$1'),{atom,?line('$1'),''},'$2'}.
 %expr_900 -> expr_900 '.' atom1 :
 %	{record_field,?line('$2'),'$1','$3'}.
-%expr_900 -> expr_900 '.' atom1 '.' atom1 :
-%	{record_field,?line('$2'),'$1','$3','$5'}.
 expr_900 -> expr_max : '$1'.
 
 expr_max -> var : '$1'.
@@ -333,36 +331,45 @@ tuple -> '{' exprs '}' : {tuple,?line('$1'),'$2'}.
 
 %% N.B. This is called from expr_700.
 
-record_selector -> var '.' atom1 '.' atom1 :
-	{record_selector,?line('$1'),'$1',element(3, '$3'),element(3, '$5')}.
-record_selector -> atom1 '.' '*' :
-	{record_selector,?line('$1'),undefined,element(3, '$1'),'*'}.
-record_selector -> atom1 '.' atom1 :
-	{record_selector,?line('$1'),undefined,element(3, '$1'),element(3, '$3')}.
-%record_selector -> atom1 :
-%	{record_selector,?line('$1'),undefined,undefined,element(3, '$1')}.
+%record_expr -> '#' atom1 '.' atom1 :
+%	{record_index,?line('$1'),element(3, '$2'),'$4'}.
+%record_expr -> '#' atom1 record_tuple :
+%	{record,?line('$1'),element(3, '$2'),'$3'}.
+%record_expr -> expr_max '#' atom1 '.' atom1 :
+%	{record_field,?line('$2'),'$1',element(3, '$3'),'$5'}.
+%record_expr -> expr_max '#' atom1 record_tuple :
+%	{record,?line('$2'),'$1',element(3, '$3'),'$4'}.
+%
+%record_tuple -> '{' '}' : [].
+%record_tuple -> '{' record_fields '}' : '$2'.
+%
+%record_fields -> record_field : ['$1'].
+%record_fields -> record_field ',' record_fields : ['$1' | '$3'].
+%
+%record_field -> var '=' expr : {record_field,?line('$1'),'$1','$3'}.
+%record_field -> atom1 '=' expr : {record_field,?line('$1'),'$1','$3'}.
 
-record_expr -> '{' record_selector ':' expr '}' :
+record_selector -> expr_max '.' atom1 :
+	{record_selector,?line('$2'),undefined,element(3, '$1'),element(3, '$3')}.
+record_selector -> atom1 :
+	{record_selector,?line('$1'),undefined,undefined,element(3, '$1')}.
+
+record_expr -> '{' record_selector '<-' expr '}' :
 	{record,?line('$1'),'$2','$4',[]}.
-record_expr -> '{' record_selector ':' expr ',' record_fields '}' :
+record_expr -> '{' record_selector '<-' expr ',' record_fields '}' :
 	{record,?line('$1'),'$2','$4','$6'}.
-
-%record_expr -> expr_max '.' atom1 '.' atom1 :
-%	{record_field,?line('$2'),'$1',element(3, '$3'),element(3, '$5')}.
-%record_expr -> expr_max '.' atom1 :
-%	{record_field,?line('$2'),'$1',undefined,element(3, '$3')}.
+record_expr -> expr_max '.' atom1 :
+	{record_field,?line('$2'),element(3, '$3'),'$1'}.
 
 record_fields -> record_field : ['$1'].
-record_fields -> record_field ',' record_fields : ['$1' | '$3'].
+record_fields -> record_field ',' record_fields : ['$1'|'$3'].
 
-record_field -> atom1 ':' expr :
-	{record_field,?line('$1'),element(3, '$1'),'$3'}.
+record_field -> atom1 '<-' expr :
+	{record_field,?line('$2'),element(3, '$1'),'$3'}.
 
 %% N.B. This is called from expr_700.
 
-function_call -> expr_900 ':' expr_max argument_list :
-	{call,?line('$1'),{remote,?line('$2'),'$1','$3'},element(1, '$4')}.
-function_call -> expr_900 argument_list :
+function_call -> expr_800 argument_list :
 	{call,?line('$1'),'$1',element(1, '$2')}.
 
 
