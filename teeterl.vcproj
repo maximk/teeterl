@@ -160,6 +160,9 @@
 				RelativePath=".\compiler\tt_compile.erl">
 			</File>
 			<File
+				RelativePath=".\compiler\tt_parse.yrl">
+			</File>
+			<File
 				RelativePath=".\compiler\v3_life.hrl">
 			</File>
 		</Filter>
@@ -171,6 +174,9 @@
 			</File>
 			<File
 				RelativePath=".\util\bifs_gen.erl">
+			</File>
+			<File
+				RelativePath=".\util\cli_run.erl">
 			</File>
 			<File
 				RelativePath=".\util\mods_gen.erl">
@@ -277,6 +283,9 @@
 			</File>
 			<File
 				RelativePath=".\test\tuple_SUITE.erl">
+			</File>
+			<File
+				RelativePath=".\test\typed_tuple.erl">
 			</File>
 		</Filter>
 		<Filter
