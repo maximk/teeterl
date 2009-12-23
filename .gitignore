@@ -23,3 +23,5 @@ ebin/*
 navel
 
 test/snip
+
+*.beam

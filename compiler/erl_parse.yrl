@@ -34,7 +34,8 @@ binary_comprehension
 tuple
 atom1
 %struct
-record_expr record_field record_fields
+record_expr record_tuple record_field record_fields
+named_tuple_expr named_tuple_field named_tuple_fields
 if_expr if_clause if_clauses case_expr cr_clause cr_clauses receive_expr
 fun_expr fun_clause fun_clauses
 %% cond_expr cond_clause cond_clauses
@@ -244,6 +245,7 @@ expr_600 -> expr_700 : '$1'.
 
 expr_700 -> function_call : '$1'.
 expr_700 -> record_expr : '$1'.
+expr_700 -> named_tuple_expr : '$1'.
 expr_700 -> expr_800 : '$1'.
 
 expr_800 -> expr_900 ':' expr_max :
@@ -331,49 +333,53 @@ tuple -> '{' exprs '}' : {tuple,?line('$1'),'$2'}.
 
 %% N.B. This is called from expr_700.
 
-%record_expr -> '#' atom1 '.' atom1 :
-%	{record_index,?line('$1'),element(3, '$2'),'$4'}.
-%record_expr -> '#' atom1 record_tuple :
-%	{record,?line('$1'),element(3, '$2'),'$3'}.
-%record_expr -> expr_max '#' atom1 '.' atom1 :
-%	{record_field,?line('$2'),'$1',element(3, '$3'),'$5'}.
-%record_expr -> expr_max '#' atom1 record_tuple :
-%	{record,?line('$2'),'$1',element(3, '$3'),'$4'}.
-%
-%record_tuple -> '{' '}' : [].
-%record_tuple -> '{' record_fields '}' : '$2'.
-%
-%record_fields -> record_field : ['$1'].
-%record_fields -> record_field ',' record_fields : ['$1' | '$3'].
-%
-%record_field -> var '=' expr : {record_field,?line('$1'),'$1','$3'}.
-%record_field -> atom1 '=' expr : {record_field,?line('$1'),'$1','$3'}.
-
-record_expr -> '{' expr_max '.' atom1 '#' record_fields '}' :
-	{record,?line('$1'),'$2',element(3, '$4'),'$6'}.
-record_expr -> '{' expr_max '.' record_fields '}' :
-	{record,?line('$1'),'$2','','$4'}.
-record_expr -> '{' atom1 '#' record_fields '}' :
-	{record,?line('$1'),element(3, '$2'),'$4'}.
-record_expr -> '{' record_fields '}' :
-	{record,?line('$1'),'','$2'}.
-record_expr -> '{' atom1 '#' '}' :
-	{record,?line('$1'),element(3, '$2'),[]}.
-
-record_expr -> expr_max '.' atom1 '#' atom1:
+record_expr -> '#' atom1 '.' atom1 :
+	{record_index,?line('$1'),element(3, '$2'),'$4'}.
+record_expr -> '#' atom1 record_tuple :
+	{record,?line('$1'),element(3, '$2'),'$3'}.
+record_expr -> expr_max '#' atom1 '.' atom1 :
 	{record_field,?line('$2'),'$1',element(3, '$3'),'$5'}.
-record_expr -> expr_max '.' atom1 :
-	{record_field,?line('$2'),'$1','','$3'}.
-record_expr -> atom1 '#' atom1:
-	{record_index,?line('$2'),element(3, '$1'),'$3'}.
+record_expr -> expr_max '#' atom1 record_tuple :
+	{record,?line('$2'),'$1',element(3, '$3'),'$4'}.
+
+record_tuple -> '{' '}' : [].
+record_tuple -> '{' record_fields '}' : '$2'.
 
 record_fields -> record_field : ['$1'].
-record_fields -> record_field ',' record_fields : ['$1'|'$3'].
+record_fields -> record_field ',' record_fields : ['$1' | '$3'].
 
-record_field -> var '<-' expr :
-	{record_field,?line('$2'),'','$1','$3'}.
-record_field -> atom1 '<-' expr :
-	{record_field,?line('$2'),'','$1','$3'}.
+record_field -> var '=' expr : {record_field,?line('$1'),'$1','$3'}.
+record_field -> atom1 '=' expr : {record_field,?line('$1'),'$1','$3'}.
+
+named_tuple_expr -> '{' expr_max '.' atom1 '#' named_tuple_fields '}' :
+	{named_tuple,?line('$1'),'$2',element(3, '$4'),'$6'}.
+named_tuple_expr -> '{' expr_max '.' named_tuple_fields '}' :
+	{named_tuple,?line('$1'),'$2','','$4'}.
+named_tuple_expr -> '{' atom1 '#' named_tuple_fields '}' :
+	{named_tuple,?line('$1'),element(3, '$2'),'$4'}.
+named_tuple_expr -> '{' named_tuple_fields '}' :
+	{named_tuple,?line('$1'),'','$2'}.
+named_tuple_expr -> '{' atom1 '#' '}' :
+	{named_tuple,?line('$1'),element(3, '$2'),[]}.
+
+named_tuple_expr -> expr_max '.' atom1 '#' atom1:
+	{named_tuple_field,?line('$2'),'$1',element(3, '$3'),'$5'}.
+named_tuple_expr -> expr_max '.' atom1 :
+	{named_tuple_field,?line('$2'),'$1','','$3'}.
+
+%%
+%% causes two shift/reduce conflicts if ordinary records are enabled
+%%
+named_tuple_expr -> atom1 '#' atom1:
+	{named_tuple_index,?line('$2'),element(3, '$1'),'$3'}.
+
+named_tuple_fields -> named_tuple_field : ['$1'].
+named_tuple_fields -> named_tuple_field ',' named_tuple_fields : ['$1'|'$3'].
+
+named_tuple_field -> var '<-' expr :
+	{named_tuple_field,?line('$2'),'$1','$3'}.
+named_tuple_field -> atom1 '<-' expr :
+	{named_tuple_field,?line('$2'),'$1','$3'}.
 
 %% N.B. This is called from expr_700.
 

@@ -1249,6 +1249,17 @@ pattern({record,Line,Name,Pfs}, Vt, Old, Bvt, St) ->
             pattern_fields(Pfs, Name, Fields, Vt, Old, Bvt, St1);
         error -> {[],[],add_error(Line, {undefined_record,Name}, St)}
     end;
+%%
+%% Named tuple patterns
+%%
+pattern({named_tuple_index,_Line,_Name,_Field}, _Vt, _Old, _Bvt, St) ->
+	{[],[],St};
+pattern({named_tuple_field,_Line,_Field,_What}, _Vt, _Old, _Bvt, St) ->
+	{[],[],St};
+pattern({named_tuple,_Line,Name,Pfs}, Vt, Old, Bvt, St) ->
+	Fields = [],
+	pattern_fields(Pfs, Name, Fields, Vt, Old, Bvt, St);
+
 pattern({bin,_,Fs}, Vt, Old, Bvt, St) ->
     pattern_bin(Fs, Vt, Old, Bvt, St);
 pattern({op,_Line,'++',{nil,_},R}, Vt, Old, Bvt, St) ->
@@ -2204,6 +2215,20 @@ check_field({record_field,_Lf,{var,_La,'_'},Val}, _Name, _Fields,
             Vt, St, Sfs, CheckFun) ->
     {Sfs,CheckFun(Val, Vt, St)};
 check_field({record_field,_Lf,{var,La,V},_Val}, Name, _Fields,
+            Vt, St, Sfs, _CheckFun) ->
+    {Sfs,{Vt,add_error(La, {field_name_is_variable,Name,V}, St)}};
+
+check_field({named_tuple_field,Lf,{atom,_La,F},Val}, Name, _Fields,
+            Vt, St, Sfs, CheckFun) ->
+    case member(F, Sfs) of
+        true -> {Sfs,{Vt,add_error(Lf, {redefine_field,Name,F}, St)}};
+        false ->
+            {[F|Sfs],CheckFun(Val, Vt, St)}
+    end;
+check_field({named_tuple_field,_Lf,{var,_La,'_'},Val}, _Name, _Fields,
+            Vt, St, Sfs, CheckFun) ->
+    {Sfs,CheckFun(Val, Vt, St)};
+check_field({named_tuple_field,_Lf,{var,La,V},_Val}, Name, _Fields,
             Vt, St, Sfs, _CheckFun) ->
     {Sfs,{Vt,add_error(La, {field_name_is_variable,Name,V}, St)}}.
 
