@@ -1657,6 +1657,20 @@ gexpr({record,Line,Name,Inits}, Vt, St) ->
                  fun (Dfs, St1) ->
                          ginit_fields(Inits, Line, Name, Dfs, Vt, St1)
                  end);
+
+%%
+%% Named tuples in guard expressions
+%%
+gexpr({named_tuple_index,_Line,_Name,_Field}, _Vt, St) ->
+	{[],St};
+gexpr({named_tuple_field,_Line,_Name,_Field}, _Vt, St) ->
+	{[],St};
+gexpr({named_tuple_field,_Line,Expr,_Name,_Field}, Vt, St) ->
+	gexpr(Expr, Vt, St);
+gexpr({named_tuple,_Line,Name,Ifs}, Vt, St) ->
+	Fields = [],
+	check_fields(Ifs, Name, Fields, Vt, St, fun gexpr/3);
+
 gexpr({bin,_Line,Fs}, Vt,St) ->
     expr_bin(Fs, Vt, St, fun gexpr/3);
 gexpr({call,_Line,{atom,_Lr,is_record},[E,{atom,Ln,Name}]}, Vt, St0) ->
@@ -1895,6 +1909,28 @@ expr({record,Line,Rec,Name,Upds}, Vt, St0) ->
         true -> {[],add_error(Line, {wildcard_in_update,Name}, St2)};
         false -> {vtmerge(Rvt, Usvt),St2}
     end;
+
+%%
+%% Named tuple in expressions
+%%
+expr({named_tuple_index,_Line,_Name,_Field}, _Vt, St) ->
+	{[],St};
+expr({named_tuple,_Line,Name,Ifs}, Vt, St) ->
+	Fields = [],
+	check_fields(Ifs, Name, Fields, Vt, St, fun expr/3);
+expr({named_tuple_field,_Line,_Name,_Field}, _Vt, St) ->
+	{[],St};
+expr({named_tuple_field,Line,Expr,_Name,_Field}, Vt, St) ->
+	record_expr(Line, Expr, Vt, St);
+expr({named_tuple,Line,Expr,Name,Upds}, Vt, St0) ->
+	{Rvt,St1} = record_expr(Line, Expr, Vt, St0),
+	Fields = [],
+    {Usvt,St2} = update_fields(Upds, Name, Fields, Vt, St1),
+    case has_wildcard_field(Upds) of
+        true -> {[],add_error(Line, {wildcard_in_update,Name}, St2)};
+        false -> {vtmerge(Rvt, Usvt),St2}
+    end;
+	
 expr({bin,_Line,Fs}, Vt, St) ->
     expr_bin(Fs, Vt, St, fun expr/3);
 expr({block,_Line,Es}, Vt, St) ->
@@ -2075,6 +2111,7 @@ is_valid_record(Rec) ->
         {lc, _, _, _} -> false;
         {record_index, _, _, _} -> false;
         {'fun', _, _} -> false;
+        {'', _, _} -> false;		%% for named tuples
         _ -> true
     end.
 
