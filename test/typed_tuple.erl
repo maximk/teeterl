@@ -4,7 +4,8 @@
 create_typed_tuples() ->
 	T1 = {customer#name <- "Robert", age <- 27},
 	T2 = {name <- "Nina"},
-	{T1,T2}.
+	T3 = {customer#},
+	{T1,T2,T3}.
 
 access_typed_tuple_fields(A) ->
 	V1 = A.customer#name,

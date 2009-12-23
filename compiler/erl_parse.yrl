@@ -34,7 +34,7 @@ binary_comprehension
 tuple
 atom1
 %struct
-record_expr record_selector record_field record_fields
+record_expr record_field record_fields
 if_expr if_clause if_clauses case_expr cr_clause cr_clauses receive_expr
 fun_expr fun_clause fun_clauses
 %% cond_expr cond_clause cond_clauses
@@ -349,31 +349,29 @@ tuple -> '{' exprs '}' : {tuple,?line('$1'),'$2'}.
 %record_field -> var '=' expr : {record_field,?line('$1'),'$1','$3'}.
 %record_field -> atom1 '=' expr : {record_field,?line('$1'),'$1','$3'}.
 
-record_selector -> expr_max '.' atom1 '#' atom1 :
-	{record_selector,?line('$2'),'$1',element(3, '$3'),element(3, '$5')}.
-record_selector -> expr_max '.' atom1 :
-	{record_selector,?line('$2'),'$1',undefined,element(3, '$3')}.
-record_selector -> atom1 '#' atom1 :
-	{record_selector,?line('$2'),undefined,element(3, '$1'),element(3, '$3')}.
-record_selector -> atom1 :
-	{record_selector,?line('$1'),undefined,undefined,element(3, '$1')}.
+record_expr -> '{' expr_max '.' atom1 '#' record_fields '}' :
+	{record,?line('$1'),'$2',element(3, '$4'),'$6'}.
+record_expr -> '{' expr_max '.' record_fields '}' :
+	{record,?line('$1'),'$2','','$4'}.
+record_expr -> '{' atom1 '#' record_fields '}' :
+	{record,?line('$1'),element(3, '$2'),'$4'}.
+record_expr -> '{' atom1 '#' '}' :
+	{record,?line('$1'),element(3, '$2'),[]}.
 
-record_expr -> '{' record_selector '<-' expr '}' :
-	{record,?line('$1'),'$2','$4',[]}.
-record_expr -> '{' record_selector '<-' expr ',' record_fields '}' :
-	{record,?line('$1'),'$2','$4','$6'}.
 record_expr -> expr_max '.' atom1 '#' atom1:
-	{record_field,?line('$2'),element(3, '$3'),element(3, '$5'),'$1'}.
+	{record_field,?line('$2'),'$1',element(3, '$3'),'$5'}.
 record_expr -> expr_max '.' atom1 :
-	{record_field,?line('$2'),undefined,element(3, '$3'),'$1'}.
+	{record_field,?line('$2'),'$1','','$3'}.
 record_expr -> atom1 '#' atom1:
-	{record_field,?line('$2'),element(3, '$1'),element(3, '$3'),undefined}.
+	{record_index,?line('$2'),element(3, '$1'),'$3'}.
 
 record_fields -> record_field : ['$1'].
 record_fields -> record_field ',' record_fields : ['$1'|'$3'].
 
+record_field -> var '<-' expr :
+	{record_field,?line('$2'),'','$1','$3'}.
 record_field -> atom1 '<-' expr :
-	{record_field,?line('$2'),undefined,element(3, '$1'),'$3'}.
+	{record_field,?line('$2'),'','$1','$3'}.
 
 %% N.B. This is called from expr_700.
 
