@@ -1,52 +1,43 @@
 -module(tt_named_tuples).
--export([resolve_names/2]).
+-export([attributes/2]).
 
--import(lists, [map/2,mapfoldl/3,member/2,keytake/3]).
+-import(lists, [map/2,foldl/3,member/2,keytake/3]).
 
-resolve_names(Forms, _Opts) ->
-	{ExpandedForms,Nt} = mapfoldl(fun node/2, [], Forms),
-
-	Attrs = map(fun({Name,Fields}) ->
+attributes(Forms, _Opts) ->
+	Nt = foldl(fun node/2, [], Forms),
+	map(fun({Name,Fields}) ->
 		AtomFields = [erl_syntax:atom(Field) ||  Field <- Fields],
 		erl_syntax:attribute(named_tuple,
 			[erl_syntax:atom(Name),
 			 erl_syntax:tuple(AtomFields)])
-	end, Nt),
+	end, Nt).
 
-	Attrs ++ ExpandedForms.
+node({named_tuple,_,Expr,Name,Upds}, Nt) when Name /= '' ->
+	Nt1 = node(Expr, Nt),
+	foldl(fun({named_tuple_field,_,{atom,_,Field},Value}, Nta) ->
+		node(Value, add_field(Name, Field, Nta))
+	end, Nt1, Upds);
 
-node({named_tuple,Line,Expr,Name,Upds}, Nt) when Name /= '' ->
-	{Expr1,Nt1} = node(Expr, Nt),
-	{Upds1,Nt2} = mapfoldl(fun({named_tuple_field,La,{atom,_,Field},Value}, Nta) ->
-		{Value1,Ntb} = node(Value, add_field(Name, Field, Nta)),
-		{{named_tuple_field,La,Field,Value1},Ntb}
-	end, Nt1, Upds),
-	{{named_tuple,Line,Expr1,Name,Upds1},Nt2};
+node({named_tuple,_,Name,Upds}, Nt) when Name /= '' ->
+	foldl(fun({named_tuple_field,_,{atom,_,Field},Value}, Nta) ->
+		node(Value, add_field(Name, Field, Nta))
+	end, Nt, Upds);
 
-node({named_tuple,Line,Name,Upds}, Nt) when Name /= '' ->
-	{Upds1,Nt1} = mapfoldl(fun({named_tuple_field,La,{atom,_,Field}=A,Value}, Nta) ->
-		{Value1,Ntb} = node(Value, add_field(Name, Field, Nta)),
-		{{named_tuple_field,La,A,Value1},Ntb}
-	end, Nt, Upds),
-	{{named_tuple,Line,Name,Upds1},Nt1};
+node({named_tuple_field,_,Expr,Name,{atom,_,Field}}, Nt) when Name /= '' ->
+	node(Expr, add_field(Name, Field, Nt));
 
-node({named_tuple_field,Line,Expr,Name,{atom,_,Field}=A}, Nt) when Name /= '' ->
-	{Expr1,Nt1} = node(Expr, add_field(Name, Field, Nt)),
-	{{named_tuple_field,Line,Expr1,Name,A},Nt1};
-
-node({named_tuple_index,_Line,Name,{atom,_,Field}}=Node, Nt) ->
-	{Node,add_field(Name, Field, Nt)};
+node({named_tuple_index,_,Name,{atom,_,Field}}, Nt) ->
+	add_field(Name, Field, Nt);
 	
 node(Nodes, Nt) when is_list(Nodes) ->
-	mapfoldl(fun node/2, Nt, Nodes);
+	foldl(fun node/2, Nt, Nodes);
 
 node(Node, Nt) when is_tuple(Node) ->
-	[What,Line|Nodes] = tuple_to_list(Node),
-	{Nodes1,Nt1} = mapfoldl(fun node/2, Nt, Nodes),
-	{list_to_tuple([What,Line|Nodes1]),Nt1};
+	[_What,_Line|Nodes] = tuple_to_list(Node),
+	foldl(fun node/2, Nt, Nodes);
 
-node(Node, Nt) ->
-	{Node,Nt}.
+node(_Node, Nt) ->
+	Nt.
 
 add_field(Name, Field, Nt) ->
 	case keytake(Name, 1, Nt) of
