@@ -282,6 +282,16 @@ preload({Mod,Exp,Lambdas,Attr,Asm}) ->
 		I;
 	({bif,N}) when is_integer(N) ->
 		{b,N};
+	
+	({literal,{'$NT',N,F}}) when is_atom(N), is_atom(F) ->
+
+		%%
+		%% Named tuple field reference
+		%%	translated into integer when the module is loaded
+		%%
+	
+		{n,{N,F}};
+
 	({literal,L}) ->
 	
 		%%

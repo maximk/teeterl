@@ -4,19 +4,19 @@ LINK		= link.exe
 LIBR		= lib.exe
 
 INCLUDES	= /I include /I include/apr /I include/apr-util
-#OPT_OPT		= /MDd /Od
-OPT_OPT	= /MD /O2 /Ot
+OPT_OPT		= /MDd /Od
+#OPT_OPT	= /MD /O2 /Ot
 CCOPTS		= /nologo /Gm /Zi /W3 /EHsc $(OPT_OPT) /Fo$B/ \
 			  $(INCLUDES) \
 			  /D WIN32 /D APR_DECLARE_STATIC /D APU_DECLARE_STATIC \
-#			  /D DEBUG
+			  /D DEBUG
 
-#LDOPTS		= /nologo /debug /subsystem:console /incremental:no \
-#			  /nodefaultlib:msvcrt \
-#			  /fixed:no
+LDOPTS		= /nologo /debug /subsystem:console /incremental:no \
+			  /nodefaultlib:msvcrt \
+			  /fixed:no
 
-LDOPTS		= /nologo /subsystem:console /incremental:no \
-			  /ignore:4089 /fixed:no
+#LDOPTS		= /nologo /subsystem:console /incremental:no \
+#			  /ignore:4089 /fixed:no
 
 # NB: 64-bit systems may require larger stack
 
@@ -125,8 +125,8 @@ XOBJ		= $B/init.obj \
 			  $B/test.obj \
 			  $B/navel.obj
 
-#$(MODS):	$(COMP)
-#$(TESTS):	$(COMP)
+$(MODS):	$(COMP)
+$(TESTS):	$(COMP)
 
 include/atom_defs.h atoms.inc compiler/atoms.erl:	$E/atoms_gen.beam $(ATOMTAB) $(BIFTAB)
 	$(ERL) -pa $E -run atoms_gen compile_atoms $(ATOMTAB) $(BIFTAB) \
@@ -152,13 +152,13 @@ $C/erl_parse.erl: $C/erl_parse.yrl $E/cli_run.beam
 #
 #	Under observation: comment out when done
 #
-$X/named_tuple.cx: test/named_tuple.erl $(COMP)
-	$(ERL) -pa $E \
-		-run cli_run unload_mods $(STALE_MODS) \
-		-run tt_compile files_outdir test/named_tuple.erl $X \
-		-run init stop -noshell
+#$X/named_tuple.cx: test/named_tuple.erl $(COMP)
+#	$(ERL) -pa $E \
+#		-run cli_run unload_mods $(STALE_MODS) \
+#		-run tt_compile files_outdir test/named_tuple.erl $X \
+#		-run init stop -noshell
 	
-all:		$(COMP) $(OBJ) $(TESTS) $B/teeterl.exe $X/named_tuple.cx
+all:		$(COMP) $(OBJ) $(TESTS) $B/teeterl.exe
 
 .SUFFIXES:: .erl .c .cx .x
 

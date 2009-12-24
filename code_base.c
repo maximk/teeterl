@@ -115,6 +115,9 @@ int code_base_load(code_base_t *self,
 					case A_B:
 						m->code[i].bif = builtins[int_value(value)].entry;
 						break;
+					case A_N:		// {n,{N,F}}
+						m->code[i].t = tag_int(7);	//TODO
+						break;
 					default:
 						ok = 0;
 					}

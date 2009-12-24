@@ -326,7 +326,7 @@ expr({record,_,R,Name,Us}, St0) ->
 %% Expand named tuple
 %%
 expr({named_tuple_index,Line,Name,{atom,_,F}}, St) ->
-	I = {integer,Line,{Name,F}},
+	I = {integer,Line,{'$NT',Name,F}},
 	{I,St};
 
 expr({bin,Line,Es0}, St0) ->
