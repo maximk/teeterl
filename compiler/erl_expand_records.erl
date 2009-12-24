@@ -31,7 +31,8 @@
 -record(exprec, {compile=[],          % Compile flags
                  vcount=0,            % Variable counter
                  imports=[],          % Imports
-                 records=dict:new(),  % Record definitions
+                 records=dict:new(),		% Record definitions
+		         named_tuples=dict:new(),	% Named tuple definitions
 		 trecords=sets:new(), % Typed records
 		 uses_types=false,    % Are there -spec or -type in the module
                  strict_ra=[],        % strict record accesses
@@ -80,6 +81,11 @@ forms([{attribute,L,record,{Name,Defs}} | Fs], St0) ->
 	false ->
 	    {Fs1, St1}
     end;
+forms([{attribute,_L,named_tuple,{Name,Fields}}=F | Fs], St0) ->
+	As = [A || {atom,_,A} <- Fields],
+    St = St0#exprec{named_tuples=dict:store(Name, As, St0#exprec.named_tuples)},
+    {Fs1, St1} = forms(Fs, St),
+    {[F|Fs1],St1};
 forms([{attribute,L,import,Is} | Fs0], St0) ->
     St1 = import(Is, St0),
     {Fs,St2} = forms(Fs0, St1),
@@ -315,6 +321,14 @@ expr({record_field,Line,R,Name,F}, St) ->
 expr({record,_,R,Name,Us}, St0) ->
     {Ue,St1} = record_update(R, Name, record_fields(Name, St0), Us, St0),
     expr(Ue, St1);
+
+%%
+%% Expand named tuple
+%%
+expr({named_tuple_index,Line,Name,{atom,_,F}}, St) ->
+	I = {integer,Line,{Name,F}},
+	{I,St};
+
 expr({bin,Line,Es0}, St0) ->
     {Es1,St1} = expr_bin(Es0, St0),
     {{bin,Line,Es1},St1};

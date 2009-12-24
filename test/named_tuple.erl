@@ -2,15 +2,15 @@
 -compile(export_all).
 
 mention_nt() ->
-	car#model,
-	{customer#name <- "Wooster", age <- 37}.
+	car#model.
+	%{customer#name <- "Wooster", age <- 37}.
 
-unknown_nt(X) ->
-	{model <- 3},					%% no nt with field 'model'
-	{name <- "Honda", age <- 30},	%% no nt with both fields 'name' and 'mpg'
-	X.name,
-	customer#beep,
-	ok.
+%unknown_nt(X) ->
+%	{model <- 3},					%% no nt with field 'model'
+%	{name <- "Honda", age <- 30},	%% no nt with both fields 'name' and 'mpg'
+%	X.name,
+%	customer#beep,
+%	ok.
 
 %create_named_tuples() ->
 %	T1 = {customer#name <- "Robert", age <- 27},
