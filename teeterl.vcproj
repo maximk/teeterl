@@ -279,10 +279,10 @@
 				RelativePath=".\test\lists_SUITE.erl">
 			</File>
 			<File
-				RelativePath=".\test\tuple_SUITE.erl">
+				RelativePath=".\test\named_tuple.erl">
 			</File>
 			<File
-				RelativePath=".\test\typed_tuple.erl">
+				RelativePath=".\test\tuple_SUITE.erl">
 			</File>
 		</Filter>
 		<Filter
