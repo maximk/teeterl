@@ -6,4 +6,11 @@ exec1([Mod,Fun,A]) ->
 	F = list_to_atom(Fun),
 	M:F(A).
 
+unload_mods(Mods) ->
+	lists:foreach(fun(Mod) ->
+		M = list_to_atom(Mod),
+		code:purge(M),
+		code:delete(M)
+	end, Mods).
+
 %%EOF

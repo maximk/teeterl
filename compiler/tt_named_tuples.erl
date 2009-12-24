@@ -17,24 +17,24 @@ resolve_names(Forms, _Opts) ->
 
 node({named_tuple,Line,Expr,Name,Upds}, Nt) when Name /= '' ->
 	{Expr1,Nt1} = node(Expr, Nt),
-	{Upds1,Nt2} = mapfoldl(fun({named_tuple_field,La,Field,Value}, Nta) ->
+	{Upds1,Nt2} = mapfoldl(fun({named_tuple_field,La,{atom,_,Field},Value}, Nta) ->
 		{Value1,Ntb} = node(Value, add_field(Name, Field, Nta)),
 		{{named_tuple_field,La,Field,Value1},Ntb}
 	end, Nt1, Upds),
 	{{named_tuple,Line,Expr1,Name,Upds1},Nt2};
 
 node({named_tuple,Line,Name,Upds}, Nt) when Name /= '' ->
-	{Upds1,Nt1} = mapfoldl(fun({named_tuple_field,La,Field,Value}, Nta) ->
+	{Upds1,Nt1} = mapfoldl(fun({named_tuple_field,La,{atom,_,Field}=A,Value}, Nta) ->
 		{Value1,Ntb} = node(Value, add_field(Name, Field, Nta)),
-		{{named_tuple_field,La,Field,Value1},Ntb}
+		{{named_tuple_field,La,A,Value1},Ntb}
 	end, Nt, Upds),
 	{{named_tuple,Line,Name,Upds1},Nt1};
 
-node({named_tuple_field,Line,Expr,Name,Field}, Nt) when Name /= '' ->
+node({named_tuple_field,Line,Expr,Name,{atom,_,Field}=A}, Nt) when Name /= '' ->
 	{Expr1,Nt1} = node(Expr, add_field(Name, Field, Nt)),
-	{{named_tuple_field,Line,Expr1,Name,Field},Nt1};
+	{{named_tuple_field,Line,Expr1,Name,A},Nt1};
 
-node({named_tuple_index,_Line,Name,Field}=Node, Nt) ->
+node({named_tuple_index,_Line,Name,{atom,_,Field}}=Node, Nt) ->
 	{Node,add_field(Name, Field, Nt)};
 	
 node(Nodes, Nt) when is_list(Nodes) ->

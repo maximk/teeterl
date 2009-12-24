@@ -28,6 +28,8 @@ STDLIBS		= kernel32.lib advapi32.lib ws2_32.lib wsock32.lib \
 ERLC		= "C:\Program Files\erl5.7.3\bin\erlc.exe"
 ERL			= "C:\Program Files\erl5.7.3\bin\erl.exe"
 
+STALE_MODS	= erl_parse erl_lint erl_expand_records
+
 B			= bin
 E			= ebin
 X			= xbin
@@ -79,6 +81,9 @@ COMP		= $E/tt_compile.beam \
 			  $E/tt_named_tuples.beam \
 			  $E/tt_codegen.beam \
 			  $E/tt_asm.beam \
+			  $E/erl_parse.beam \
+			  $E/erl_lint.beam \
+			  $E/erl_expand_records.beam \
 			  $E/atoms.beam \
 			  $E/opcodes.beam \
 			  $E/bifs.beam \
@@ -147,10 +152,13 @@ $C/erl_parse.erl: $C/erl_parse.yrl $E/cli_run.beam
 #
 #	Under observation: comment out when done
 #
-#$X/navel.cx: mod/navel.erl $(COMP)
-#	$(ERL) -pa $E -run tt_compile files_outdir_dopjop mod/navel.erl $X -run init stop -noshell
+$X/named_tuple.cx: test/named_tuple.erl $(COMP)
+	$(ERL) -pa $E \
+		-run cli_run unload_mods $(STALE_MODS) \
+		-run tt_compile files_outdir test/named_tuple.erl $X \
+		-run init stop -noshell
 	
-all:		$(COMP) $(OBJ) $(TESTS) $B/teeterl.exe $C/erl_parse.erl
+all:		$(COMP) $(OBJ) $(TESTS) $B/teeterl.exe $X/named_tuple.cx
 
 .SUFFIXES:: .erl .c .cx .x
 
@@ -170,9 +178,15 @@ all:		$(COMP) $(OBJ) $(TESTS) $B/teeterl.exe $C/erl_parse.erl
 	$(ERLC) -o $E $<
 
 {mod}.erl{$X}.cx::
-	$(ERL) -pa $E -run tt_compile files_outdir $< $X -run init stop -noshell
+	$(ERL) -pa $E \
+		-run cli_run unload_mods $(STALE_MODS) \
+		-run tt_compile files_outdir $< $X \
+		-run init stop -noshell
 
 {$T}.erl{$X}.x::
-	$(ERL) -pa $E -run tt_compile files_outdir_binary $< $X -run init stop -noshell
+	$(ERL) -pa $E \
+		-run cli_run unload_mods $(STALE_MODS) \
+		-run tt_compile files_outdir_binary $< $X \
+		-run init stop -noshell
 
 #EOF
