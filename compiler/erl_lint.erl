@@ -94,6 +94,7 @@ value_option(Flag, Default, On, OnVal, Off, OffVal, Opts) ->
                mod_imports=dict:new()	:: dict(),	%Module Imports
                compile=[],                      %Compile flags
                records=dict:new()	:: dict(),	%Record definitions
+               named_tuples=dict:new()	::dict(),		%Named tuple definitions
                defined=gb_sets:empty()	:: gb_set(),	%Defined fuctions
 	       clashes=[],			%Exported functions named as BIFs
                not_deprecated=[],               %Not considered deprecated
@@ -228,6 +229,11 @@ format_error({unused_record,T}) ->
     io_lib:format("record ~w is unused", [T]);
 format_error({untyped_record,T}) ->
     io_lib:format("record ~w has field(s) without type information", [T]);
+%% --- named tuples ----
+format_error({unresolvable_signature,Signature}) ->
+	io_lib:format("named tuple that has fields ~w not found", [Signature]);
+format_error({ambiguous_signature,Signature}) ->
+	io_lib:format("more than one named tuple has fields ~w", [Signature]);
 %% --- variables ----
 format_error({unbound_var,V}) ->
     io_lib:format("variable ~w is unbound", [V]);
@@ -659,6 +665,8 @@ attribute_state({attribute,L,import,Is}, St) ->
     import(L, Is, St);
 attribute_state({attribute,L,record,{Name,Fields}}, St) ->
     record_def(L, Name, Fields, St);
+attribute_state({attribute,_,named_tuple,{Name,Fields}}, St) ->
+    named_tuple_def(Name, Fields, St);
 attribute_state({attribute,La,behaviour,Behaviour}, St) ->
     St#lint{behaviour=St#lint.behaviour ++ [{La,Behaviour}]};
 attribute_state({attribute,La,behavior,Behaviour}, St) ->
@@ -1913,23 +1921,19 @@ expr({record,Line,Rec,Name,Upds}, Vt, St0) ->
 %%
 %% Named tuple in expressions
 %%
-expr({named_tuple_index,_Line,_Name,_Field}, _Vt, St) ->
-	{[],St};
-expr({named_tuple,_Line,Name,Ifs}, Vt, St) ->
-	Fields = [],
-	check_fields(Ifs, Name, Fields, Vt, St, fun expr/3);
-expr({named_tuple_field,_Line,_Name,_Field}, _Vt, St) ->
-	{[],St};
-expr({named_tuple_field,Line,Expr,_Name,_Field}, Vt, St) ->
-	record_expr(Line, Expr, Vt, St);
+expr({named_tuple_index,Line,Name,Field}, _Vt, St) ->
+	check_named_tuple_index(Line, Name, Field, St);
+expr({named_tuple,Line,Name,Inits}, Vt, St) ->
+	check_named_tuple(Line, Name, Inits, Vt, St, fun expr/3);
+expr({named_tuple_field,_Line,_Field,Expr}, Vt, St) ->
+	expr(Expr, Vt, St);
+expr({named_tuple_field,Line,Expr,Name,Field}, Vt, St0) ->
+	{_,St1} = check_named_tuple_index(Line, Name, Field, St0),
+	expr(Expr, Vt, St1);
 expr({named_tuple,Line,Expr,Name,Upds}, Vt, St0) ->
-	{Rvt,St1} = record_expr(Line, Expr, Vt, St0),
-	Fields = [],
-    {Usvt,St2} = update_fields(Upds, Name, Fields, Vt, St1),
-    case has_wildcard_field(Upds) of
-        true -> {[],add_error(Line, {wildcard_in_update,Name}, St2)};
-        false -> {vtmerge(Rvt, Usvt),St2}
-    end;
+	{Uvt,St1} = check_named_tuple(Line, Name, Upds, Vt, St0, fun expr/3),
+	{Evt,St2} = expr(Expr, Vt, St1),
+	{vtmerge(Uvt, Evt),St2};
 	
 expr({bin,_Line,Fs}, Vt, St) ->
     expr_bin(Fs, Vt, St, fun expr/3);
@@ -2193,6 +2197,56 @@ normalise_fields(Fs) ->
 		Field;
             (F) -> F end, Fs).
 
+%% named_tuple_def(Name, [Field], State) -> State.
+%%  Add a named tuple definition.
+
+named_tuple_def(Name, Fields, St) ->
+	Fs = [F || {atom,_,F} <- Fields],
+	St#lint{records=dict:store(Name, Fs, St#lint.named_tuples)}.
+
+%% check_named_tuple(Name, Fields, State, CheckFun) ->
+%%		{UpdVarTable,State}.
+%%	Verify consistency of Name and Fields
+
+check_named_tuple(Line, '', Tfs, Vt, St, CheckFun) ->
+	Signature = [F || {named_tuple_field,_,{atom,_,F},_} <- Tfs],
+	ResolvedNames = dict:filter(fun(_Name, Fs) ->
+		all(fun(S) -> member(S, Fs) end, Signature)
+	end, St#lint.named_tuples),
+	St1 = case dict:size(ResolvedNames) of
+	0 ->
+		add_error(Line, {unresolvable_signature,Signature}, St);
+	1 ->
+		St;
+	_ ->
+		add_error(Line, {ambiguous_signature,Signature}, St)
+	end,
+	named_tuple_fields(Tfs, Vt, St1, CheckFun);
+
+check_named_tuple(_Line, _Name, Tfs, Vt, St, CheckFun) ->
+	named_tuple_fields(Tfs, Vt, St, CheckFun).
+
+named_tuple_fields(Tfs, Vt, St, CheckFun) ->
+	foldl(fun({named_tuple_field,_,_,Expr}, {Vta,Sta}) ->
+		CheckFun(Expr, Vta, Sta)
+	end, {Vt,St}, Tfs).
+
+check_named_tuple_index(Line, '', {atom,_,F}, St) ->
+	ResolvedNames = dict:filter(fun(_Name, Fs) ->
+		member(F, Fs)
+	end, St#lint.named_tuples),
+	case dict:size(ResolvedNames) of
+	0 ->
+		{[],add_error(Line, {unresolvable_signature,[F]}, St)};
+	1 ->
+		{[],St};
+	_ ->
+		{[],add_error(Line, {ambiguous_signature,[F]}, St)}
+	end;
+
+check_named_tuple_index(_Line, _Name, _Field, St) ->
+	{[],St}.
+
 %% exist_record(Line, RecordName, State) -> State.
 %%  Check if a record exists.  Set State.
 
@@ -2252,20 +2306,6 @@ check_field({record_field,_Lf,{var,_La,'_'},Val}, _Name, _Fields,
             Vt, St, Sfs, CheckFun) ->
     {Sfs,CheckFun(Val, Vt, St)};
 check_field({record_field,_Lf,{var,La,V},_Val}, Name, _Fields,
-            Vt, St, Sfs, _CheckFun) ->
-    {Sfs,{Vt,add_error(La, {field_name_is_variable,Name,V}, St)}};
-
-check_field({named_tuple_field,Lf,{atom,_La,F},Val}, Name, _Fields,
-            Vt, St, Sfs, CheckFun) ->
-    case member(F, Sfs) of
-        true -> {Sfs,{Vt,add_error(Lf, {redefine_field,Name,F}, St)}};
-        false ->
-            {[F|Sfs],CheckFun(Val, Vt, St)}
-    end;
-check_field({named_tuple_field,_Lf,{var,_La,'_'},Val}, _Name, _Fields,
-            Vt, St, Sfs, CheckFun) ->
-    {Sfs,CheckFun(Val, Vt, St)};
-check_field({named_tuple_field,_Lf,{var,La,V},_Val}, Name, _Fields,
             Vt, St, Sfs, _CheckFun) ->
     {Sfs,{Vt,add_error(La, {field_name_is_variable,Name,V}, St)}}.
 

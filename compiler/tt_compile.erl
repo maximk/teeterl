@@ -945,9 +945,21 @@ add_default_base(St, Forms) ->
 	    St
     end.
 
+merge_named_tuple_attrs(Forms, Attrs) ->
+	merge_named_tuple_attrs(Forms, Attrs, []).
+
+merge_named_tuple_attrs([{attribute,_,_,_}=F|Forms], Attrs, Preamble) ->
+	merge_named_tuple_attrs(Forms, Attrs, [F|Preamble]);
+merge_named_tuple_attrs(Forms, Attrs, Preamble) ->
+	reverse(Preamble) ++ Attrs ++ Forms.
+
 lint_module(St) ->
-    case erl_lint:module(St#compile.code,
-			 St#compile.ifile, St#compile.options) of
+	NamedTupleAttrs = tt_named_tuples:attributes(St#compile.code,
+		St#compile.options),
+	%io:format("NamedTupleAttrs=~p~n", [NamedTupleAttrs]),
+
+	Code = merge_named_tuple_attrs(St#compile.code, NamedTupleAttrs),
+    case erl_lint:module(Code, St#compile.ifile, St#compile.options) of
 	{ok,Ws} ->
 	    %% Insert name of module as base name, if needed. This is
 	    %% for compile:forms to work with listing files.
@@ -971,8 +983,7 @@ core_lint_module(St) ->
 %%  Do the common preprocessing of the input forms.
 
 expand_module(#compile{code=Code,options=Opts0}=St0) ->
-	Attrs = tt_named_tuples:attributes(Code, Opts0),
-    {Mod,Exp,Forms,Opts1} = sys_pre_expand:module(Attrs ++ Code, Opts0),
+    {Mod,Exp,Forms,Opts1} = sys_pre_expand:module(Code, Opts0),
     Opts = expand_opts(Opts1),
     {ok,St0#compile{module=Mod,options=Opts,code={Mod,Exp,Forms}}}.
 

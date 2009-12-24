@@ -376,8 +376,8 @@ named_tuple_expr -> atom1 '#' atom1:
 named_tuple_fields -> named_tuple_field : ['$1'].
 named_tuple_fields -> named_tuple_field ',' named_tuple_fields : ['$1'|'$3'].
 
-named_tuple_field -> var '<-' expr :
-	{named_tuple_field,?line('$2'),'$1','$3'}.
+%named_tuple_field -> var '<-' expr :
+%	{named_tuple_field,?line('$2'),'$1','$3'}.
 named_tuple_field -> atom1 '<-' expr :
 	{named_tuple_field,?line('$2'),'$1','$3'}.
 

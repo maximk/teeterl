@@ -142,6 +142,15 @@
 				RelativePath=".\compiler\erl_compile.hrl">
 			</File>
 			<File
+				RelativePath=".\compiler\erl_lint.erl">
+			</File>
+			<File
+				RelativePath=".\compiler\erl_parse.erl">
+			</File>
+			<File
+				RelativePath=".\compiler\erl_parse.yrl">
+			</File>
+			<File
 				RelativePath=".\compiler\opcodes.erl">
 			</File>
 			<File

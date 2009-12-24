@@ -125,8 +125,8 @@ XOBJ		= $B/init.obj \
 			  $B/test.obj \
 			  $B/navel.obj
 
-$(MODS):	$(COMP)
-$(TESTS):	$(COMP)
+#$(MODS):	$(COMP)
+#$(TESTS):	$(COMP)
 
 include/atom_defs.h atoms.inc compiler/atoms.erl:	$E/atoms_gen.beam $(ATOMTAB) $(BIFTAB)
 	$(ERL) -pa $E -run atoms_gen compile_atoms $(ATOMTAB) $(BIFTAB) \

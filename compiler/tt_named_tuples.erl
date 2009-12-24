@@ -3,13 +3,14 @@
 
 -import(lists, [map/2,foldl/3,member/2,keytake/3]).
 
+%% {attribute, Pos, module, {Name,Vars}}
+%% {attribute, Pos, module, Name}
+
 attributes(Forms, _Opts) ->
 	Nt = foldl(fun node/2, [], Forms),
 	map(fun({Name,Fields}) ->
-		AtomFields = [erl_syntax:atom(Field) ||  Field <- Fields],
-		erl_syntax:attribute(named_tuple,
-			[erl_syntax:atom(Name),
-			 erl_syntax:tuple(AtomFields)])
+		AtomFields = [{atom,0,Field} ||  Field <- Fields],
+		{attribute,0,named_tuple,{{atom,0,Name},AtomFields}}
 	end, Nt).
 
 node({named_tuple,_,Expr,Name,Upds}, Nt) when Name /= '' ->
