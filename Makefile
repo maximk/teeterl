@@ -76,6 +76,7 @@ OBJ			= $B/cstr.obj \
 
 
 COMP		= $E/tt_compile.beam \
+			  $E/tt_named_tuples.beam \
 			  $E/tt_codegen.beam \
 			  $E/tt_asm.beam \
 			  $E/atoms.beam \

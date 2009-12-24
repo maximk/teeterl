@@ -971,7 +971,7 @@ core_lint_module(St) ->
 %%  Do the common preprocessing of the input forms.
 
 expand_module(#compile{code=Code0,options=Opts0}=St0) ->
-	%Code = tt_named_tuples:resolve_names(Code0, Opts0),
+	Code = tt_named_tuples:resolve_names(Code0, Opts0),
     {Mod,Exp,Forms,Opts1} = sys_pre_expand:module(Code, Opts0),
     Opts = expand_opts(Opts1),
     {ok,St0#compile{module=Mod,options=Opts,code={Mod,Exp,Forms}}}.
