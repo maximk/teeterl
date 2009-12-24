@@ -231,7 +231,7 @@ format_error({untyped_record,T}) ->
     io_lib:format("record ~w has field(s) without type information", [T]);
 %% --- named tuples ----
 format_error({unresolvable_signature,Signature}) ->
-	io_lib:format("named tuple that has fields ~w not found", [Signature]);
+	io_lib:format("named tuple with fields ~w not found", [Signature]);
 format_error({ambiguous_signature,Signature}) ->
 	io_lib:format("more than one named tuple has fields ~w", [Signature]);
 %% --- variables ----
@@ -1260,13 +1260,14 @@ pattern({record,Line,Name,Pfs}, Vt, Old, Bvt, St) ->
 %%
 %% Named tuple patterns
 %%
-pattern({named_tuple_index,_Line,_Name,_Field}, _Vt, _Old, _Bvt, St) ->
+pattern({named_tuple_index,Line,Name,Field}, _Vt, _Old, _Bvt, St0) ->
+	St = check_named_tuple_index(Line, Name, Field, St0),
 	{[],[],St};
-pattern({named_tuple_field,_Line,_Field,_What}, _Vt, _Old, _Bvt, St) ->
-	{[],[],St};
-pattern({named_tuple,_Line,Name,Pfs}, Vt, Old, Bvt, St) ->
-	Fields = [],
-	pattern_fields(Pfs, Name, Fields, Vt, Old, Bvt, St);
+pattern({named_tuple_field,_Line,_Field,What}, Vt, Old, Bvt, St) ->
+	pattern(What, Vt, Old, Bvt, St);
+pattern({named_tuple,Line,Name,Pfs}, Vt, Old, Bvt, St) ->
+	St1 = check_named_tuple(Line, Name, Pfs, St),
+	named_tuple_pattern_fields(Pfs, Vt, Old, Bvt, St1);
 
 pattern({bin,_,Fs}, Vt, Old, Bvt, St) ->
     pattern_bin(Fs, Vt, Old, Bvt, St);
@@ -1669,15 +1670,16 @@ gexpr({record,Line,Name,Inits}, Vt, St) ->
 %%
 %% Named tuples in guard expressions
 %%
-gexpr({named_tuple_index,_Line,_Name,_Field}, _Vt, St) ->
-	{[],St};
-gexpr({named_tuple_field,_Line,_Name,_Field}, _Vt, St) ->
-	{[],St};
-gexpr({named_tuple_field,_Line,Expr,_Name,_Field}, Vt, St) ->
+gexpr({named_tuple_index,Line,Name,Field}, _Vt, St) ->
+	{[],check_named_tuple_index(Line, Name, Field, St)};
+gexpr({named_tuple,Line,Name,Inits}, Vt, St0) ->
+	St1 = check_named_tuple(Line, Name, Inits, St0),
+	named_tuple_fields(Inits, Vt, St1, fun gexpr/3);
+gexpr({named_tuple_field,_Line,_Field,Expr}, Vt, St) ->
 	gexpr(Expr, Vt, St);
-gexpr({named_tuple,_Line,Name,Ifs}, Vt, St) ->
-	Fields = [],
-	check_fields(Ifs, Name, Fields, Vt, St, fun gexpr/3);
+gexpr({named_tuple_field,Line,Expr,Name,Field}, Vt, St0) ->
+	St1 = check_named_tuple_index(Line, Name, Field, St0),
+	gexpr(Expr, Vt, St1);
 
 gexpr({bin,_Line,Fs}, Vt,St) ->
     expr_bin(Fs, Vt, St, fun gexpr/3);
@@ -1922,19 +1924,21 @@ expr({record,Line,Rec,Name,Upds}, Vt, St0) ->
 %% Named tuple in expressions
 %%
 expr({named_tuple_index,Line,Name,Field}, _Vt, St) ->
-	check_named_tuple_index(Line, Name, Field, St);
-expr({named_tuple,Line,Name,Inits}, Vt, St) ->
-	check_named_tuple(Line, Name, Inits, Vt, St, fun expr/3);
+	{[],check_named_tuple_index(Line, Name, Field, St)};
+expr({named_tuple,Line,Name,Inits}, Vt, St0) ->
+	St1 = check_named_tuple(Line, Name, Inits, St0),
+	named_tuple_fields(Inits, Vt, St1, fun expr/3);
 expr({named_tuple_field,_Line,_Field,Expr}, Vt, St) ->
 	expr(Expr, Vt, St);
 expr({named_tuple_field,Line,Expr,Name,Field}, Vt, St0) ->
-	{_,St1} = check_named_tuple_index(Line, Name, Field, St0),
+	St1 = check_named_tuple_index(Line, Name, Field, St0),
 	expr(Expr, Vt, St1);
 expr({named_tuple,Line,Expr,Name,Upds}, Vt, St0) ->
-	{Uvt,St1} = check_named_tuple(Line, Name, Upds, Vt, St0, fun expr/3),
-	{Evt,St2} = expr(Expr, Vt, St1),
-	{vtmerge(Uvt, Evt),St2};
-	
+	St1 = check_named_tuple(Line, Name, Upds, St0),
+	{Uvt,St2} = named_tuple_fields(Upds, Vt, St1, fun expr/3),
+	{Evt,St3} = expr(Expr, Vt, St2),
+	{vtmerge(Uvt, Evt),St3};
+
 expr({bin,_Line,Fs}, Vt, St) ->
     expr_bin(Fs, Vt, St, fun expr/3);
 expr({block,_Line,Es}, Vt, St) ->
@@ -2202,50 +2206,45 @@ normalise_fields(Fs) ->
 
 named_tuple_def(Name, Fields, St) ->
 	Fs = [F || {atom,_,F} <- Fields],
-	St#lint{records=dict:store(Name, Fs, St#lint.named_tuples)}.
+	St#lint{named_tuples=dict:store(Name, Fs, St#lint.named_tuples)}.
 
-%% check_named_tuple(Name, Fields, State, CheckFun) ->
-%%		{UpdVarTable,State}.
+%% check_named_tuple(Line, Name, Fields, State) -> State
 %%	Verify consistency of Name and Fields
 
-check_named_tuple(Line, '', Tfs, Vt, St, CheckFun) ->
+check_named_tuple(Line, '', Tfs, St) ->
 	Signature = [F || {named_tuple_field,_,{atom,_,F},_} <- Tfs],
+	check_signature(Line, Signature, St);
+check_named_tuple(_Line, _Name, _Tfs, St) ->
+	St.
+
+check_signature(Line, Signature, St) ->
 	ResolvedNames = dict:filter(fun(_Name, Fs) ->
 		all(fun(S) -> member(S, Fs) end, Signature)
 	end, St#lint.named_tuples),
-	St1 = case dict:size(ResolvedNames) of
+	case dict:size(ResolvedNames) of
 	0 ->
 		add_error(Line, {unresolvable_signature,Signature}, St);
 	1 ->
 		St;
 	_ ->
 		add_error(Line, {ambiguous_signature,Signature}, St)
-	end,
-	named_tuple_fields(Tfs, Vt, St1, CheckFun);
+	end.
 
-check_named_tuple(_Line, _Name, Tfs, Vt, St, CheckFun) ->
-	named_tuple_fields(Tfs, Vt, St, CheckFun).
+check_named_tuple_index(Line, '', {atom,_,F}, St) ->
+	check_signature(Line, [F], St);
+check_named_tuple_index(_Line, _Name, _Field, St) ->
+	St.
 
 named_tuple_fields(Tfs, Vt, St, CheckFun) ->
 	foldl(fun({named_tuple_field,_,_,Expr}, {Vta,Sta}) ->
 		CheckFun(Expr, Vta, Sta)
 	end, {Vt,St}, Tfs).
 
-check_named_tuple_index(Line, '', {atom,_,F}, St) ->
-	ResolvedNames = dict:filter(fun(_Name, Fs) ->
-		member(F, Fs)
-	end, St#lint.named_tuples),
-	case dict:size(ResolvedNames) of
-	0 ->
-		{[],add_error(Line, {unresolvable_signature,[F]}, St)};
-	1 ->
-		{[],St};
-	_ ->
-		{[],add_error(Line, {ambiguous_signature,[F]}, St)}
-	end;
-
-check_named_tuple_index(_Line, _Name, _Field, St) ->
-	{[],St}.
+named_tuple_pattern_fields(Tfs, Vt, Old, Bvt, St) ->
+	foldl(fun({named_tuple_field,_,_,Expr}, {Vta,Bvta,Sta}) ->
+		{Vtb,Bvtb,Stb} = pattern(Expr, Vt, Old, Bvt, Sta),
+		{vtmerge_pat(Vta, Vtb),vtmerge_pat(Bvta, Bvtb),Stb}
+	end, {Vt,Bvt,St}, Tfs).
 
 %% exist_record(Line, RecordName, State) -> State.
 %%  Check if a record exists.  Set State.
