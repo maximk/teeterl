@@ -328,19 +328,23 @@ expr({record,_,R,Name,Us}, St0) ->
 %%	derive implicit tuple names from signatures
 %%
 
-expr({named_tuple_index,_Line,_Name,_Field}=Ni, St) ->
-	{Ni,St};
+expr({named_tuple_index,Line,Name,Field}, St) ->
+	C = {call,Line,
+		 {remote,Line,{atom,Line,erlang},{atom,Line,named_tuple_index}},
+		 [{atom,Line,Name},Field]},
+	expr(C, St);
 
 expr({named_tuple,Line,'',Inits}, St) ->
 	Signature = [F || {named_tuple_field,_,{atom,_,F},_} <- Inits],
 	expr({named_tuple,Line,resolve_named_tuple(Signature, St),Inits}, St);
 	
-expr({named_tuple,Line,Name,Inits0}, St0) ->
-	{Inits,St} = mapfoldl(fun({named_tuple_field,L,Field,E}, St) ->
-		{Ea,Sta} = expr(E, St),
-		{{named_tuple_field,L,Field,Ea},Sta}
-	end, St0, Inits0),
-	{{named_tuple,Line,Name,Inits},St};
+expr({named_tuple,Line,Name,Inits}, St) ->
+	As = [{tuple,Line,[Field,Value]}
+		|| {named_tuple_field,_,Field,Value} <- Inits],
+	C = {call,Line,
+		 {remote,Line,{atom,Line,erlang},{atom,Line,make_named_tuple}},
+		 [{atom,Line,Name}|As]},
+	expr(C, St);
 
 expr({bin,Line,Es0}, St0) ->
     {Es1,St1} = expr_bin(Es0, St0),
