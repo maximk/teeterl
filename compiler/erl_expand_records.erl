@@ -27,6 +27,7 @@
 -export([module/2]).
 
 -import(lists,   [map/2,foldl/3,foldr/3,sort/1,reverse/1,duplicate/2]).
+-import(lists,	 [mapfoldl/3,all/2,member/2]).
 
 -record(exprec, {compile=[],          % Compile flags
                  vcount=0,            % Variable counter
@@ -324,10 +325,22 @@ expr({record,_,R,Name,Us}, St0) ->
 
 %%
 %% Expand named tuple
+%%	derive implicit tuple names from signatures
 %%
-expr({named_tuple_index,Line,Name,{atom,_,F}}, St) ->
-	I = {integer,Line,{'$NT',Name,F}},
-	{I,St};
+
+expr({named_tuple_index,_Line,_Name,_Field}=Ni, St) ->
+	{Ni,St};
+
+expr({named_tuple,Line,'',Inits}, St) ->
+	Signature = [F || {named_tuple_field,_,{atom,_,F},_} <- Inits],
+	expr({named_tuple,Line,resolve_named_tuple(Signature, St),Inits}, St);
+	
+expr({named_tuple,Line,Name,Inits0}, St0) ->
+	{Inits,St} = mapfoldl(fun({named_tuple_field,L,Field,E}, St) ->
+		{Ea,Sta} = expr(E, St),
+		{{named_tuple_field,L,Field,Ea},Sta}
+	end, St0, Inits0),
+	{{named_tuple,Line,Name,Inits},St};
 
 expr({bin,Line,Es0}, St0) ->
     {Es1,St1} = expr_bin(Es0, St0),
@@ -818,3 +831,16 @@ imported(F, A, St) ->
 
 neg_line(L) ->
     erl_parse:set_line(L, fun(Line) -> -abs(Line) end).
+
+%%
+%% Named tuple bits
+%%
+
+resolve_named_tuple(Signature, St) ->
+	Nts = dict:filter(fun(_Name, Fs) ->
+		all(fun(S) -> member(S, Fs) end, Signature)
+	end, St#exprec.named_tuples),
+	[Name|_] = dict:fetch_keys(Nts),
+	Name.
+
+%%EOF

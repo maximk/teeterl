@@ -28,7 +28,7 @@ STDLIBS		= kernel32.lib advapi32.lib ws2_32.lib wsock32.lib \
 ERLC		= "C:\Program Files\erl5.7.3\bin\erlc.exe"
 ERL			= "C:\Program Files\erl5.7.3\bin\erl.exe"
 
-STALE_MODS	= erl_parse erl_lint erl_expand_records
+STALE_MODS	= erl_parse erl_lint erl_expand_records sys_pre_expand
 
 B			= bin
 E			= ebin
@@ -77,7 +77,6 @@ OBJ			= $B/cstr.obj \
 			  $B/modbin.obj \
 			  $B/teeterl.obj
 
-
 COMP		= $E/tt_compile.beam \
 			  $E/tt_named_tuples.beam \
 			  $E/tt_codegen.beam \
@@ -85,6 +84,7 @@ COMP		= $E/tt_compile.beam \
 			  $E/erl_parse.beam \
 			  $E/erl_lint.beam \
 			  $E/erl_expand_records.beam \
+			  $E/sys_pre_expand.beam \
 			  $E/atoms.beam \
 			  $E/opcodes.beam \
 			  $E/bifs.beam \
@@ -126,8 +126,8 @@ XOBJ		= $B/init.obj \
 			  $B/test.obj \
 			  $B/navel.obj
 
-$(MODS):	$(COMP)
-$(TESTS):	$(COMP)
+#$(MODS):	$(COMP)
+#$(TESTS):	$(COMP)
 
 include/atom_defs.h atoms.inc compiler/atoms.erl:	$E/atoms_gen.beam $(ATOMTAB) $(BIFTAB)
 	$(ERL) -pa $E -run atoms_gen compile_atoms $(ATOMTAB) $(BIFTAB) \
