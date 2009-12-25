@@ -10,6 +10,7 @@
 #include "atom_defs.h"
 #include "mpi.h"
 #include "list.h"
+#include "named_tuple.h"
 
 builtin_t builtins[] = {
 #include "builtins.inc"
@@ -61,7 +62,7 @@ bifN_t code_base_bif(code_base_t *self, term_t module, term_t function, int arit
 apr_array_header_t *source_files_names(term_t info, apr_pool_t *pool);
 apr_array_header_t *source_line_blocks(term_t info, apr_pool_t *pool);
 
-int code_base_load(code_base_t *self,
+int code_base_load(code_base_t *self, named_tuples_t *nm_tuples,
 	term_t module, term_t exports, term_t fun_table, term_t attrs, term_t preloaded, term_t misc)
 {
 	module_t *m;
@@ -116,7 +117,21 @@ int code_base_load(code_base_t *self,
 						m->code[i].bif = builtins[int_value(value)].entry;
 						break;
 					case A_N:		// {n,{N,F}}
-						m->code[i].t = tag_int(7);	//TODO
+						if (is_tuple(value))
+						{
+							term_box_t *vb = peel(value);
+							if (vb->tuple.size == 2)
+							{
+								term_t name = vb->tuple.elts[0];
+								term_t field = vb->tuple.elts[1];
+								int index = named_tuples_set(nm_tuples, name, field);
+								m->code[i].t = tag_int(index);
+							}
+							else
+								ok = 0;
+						}
+						else
+							ok = 0;
 						break;
 					default:
 						ok = 0;

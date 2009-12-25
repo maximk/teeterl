@@ -66,7 +66,7 @@ code_base_t *code_base_make(apr_pool_t *pool);
 module_t *code_base_lookup(code_base_t *self, term_t module);
 codel_t *module_lookup(module_t *m, term_t function, int arity);
 bifN_t code_base_bif(code_base_t *self, term_t module, term_t function, int arity);
-int code_base_load(code_base_t *self,
+int code_base_load(code_base_t *self, named_tuples_t *nm_tuples,
 	term_t module, term_t exports, term_t fun_table, term_t attrs, term_t preloaded, term_t misc);
 int code_base_delete(code_base_t *self, term_t module);
 //int code_base_purge(code_base_t *self, uint mod_id);

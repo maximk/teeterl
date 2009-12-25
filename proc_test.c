@@ -75,7 +75,7 @@ const char *proc_test_load_sample_code(navel_context_t *cont, apr_pool_t *pool)
 	//}).
 
 	tbox = peel(code);
-	retval = code_base_load(cont->code_base,
+	retval = code_base_load(cont->code_base, cont->teevm->nm_tuples,
 		tbox->tuple.elts[1],
 		tbox->tuple.elts[2],
 		tbox->tuple.elts[3],

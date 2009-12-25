@@ -50,7 +50,7 @@ term_t bif_load_module1(term_t Where, proc_t *proc)
 		return A_BADFILE;
 	
 	tb = peel(code);
-	if (!code_base_load(proc->teevm->base,
+	if (!code_base_load(proc->teevm->base, proc->teevm->nm_tuples,
 		tb->tuple.elts[1],
 		tb->tuple.elts[2],
 		tb->tuple.elts[3],

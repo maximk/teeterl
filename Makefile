@@ -43,6 +43,7 @@ OPSTAB		= spec/teeops.tab
 
 OBJ			= $B/cstr.obj \
 			  $B/atom.obj \
+			  $B/named_tuple.obj \
 			  $B/heap.obj \
 			  $B/heap_gc.obj \
 			  $B/mixed.obj \

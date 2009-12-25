@@ -96,6 +96,9 @@
 				RelativePath=".\include\msg_queue.h">
 			</File>
 			<File
+				RelativePath=".\include\named_tuple.h">
+			</File>
+			<File
 				RelativePath=".\include\navel.h">
 			</File>
 			<File
@@ -357,6 +360,9 @@
 		</File>
 		<File
 			RelativePath=".\msg_queue.c">
+		</File>
+		<File
+			RelativePath=".\named_tuple.c">
 		</File>
 		<File
 			RelativePath=".\ol_file.c">

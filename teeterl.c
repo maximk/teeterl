@@ -4,6 +4,7 @@
 
 #include "atom_defs.h"
 #include "atom.h"
+#include "named_tuple.h"
 #include "heap.h"
 #include "code_base.h"
 #include "outlet_mall.h"
@@ -15,13 +16,15 @@
 
 extern modbin_t *modbins[];
 
-void preload_module(code_base_t *base, cstr_t *name, atoms_t *atoms, heap_t *hp);
+void preload_module(code_base_t *base,
+	cstr_t *name, atoms_t *atoms, named_tuples_t *nm_tuples, heap_t *hp);
 term_t prepare_args(int argc, const char *argv[], heap_t *hp);
 
 int main(int argc, const char *argv[])
 {
 	apr_pool_t *super_pool;
 	atoms_t *atoms;
+	named_tuples_t *nm_tuples;
 	code_base_t *base;
 	outlet_mall_t *mall;
 	teevm_t *teevm;
@@ -38,6 +41,7 @@ int main(int argc, const char *argv[])
 
 	apr_pool_create(&super_pool, 0);
 	atoms = atoms_make(super_pool);
+	nm_tuples = named_tuples_make(super_pool);
 	base = code_base_make(super_pool);
 	mall = outlet_mall_make(super_pool);
 
@@ -45,12 +49,13 @@ int main(int argc, const char *argv[])
 	apr_pool_create(&tmp, super_pool);
 	hp = heap_make(tmp);
 	//preload_module(base, (ctsr_t *)"\013prim_erlang", atoms, hp);
-	preload_module(base, (cstr_t *)"\015error_handler", atoms, hp);
-	preload_module(base, (cstr_t *)"\04init", atoms, hp);
+	preload_module(base, (cstr_t *)"\015error_handler", atoms, nm_tuples, hp);
+	preload_module(base, (cstr_t *)"\04init", atoms, nm_tuples, hp);
 	apr_pool_destroy(tmp);
 
 	teevm = apr_palloc(super_pool, sizeof(*teevm));
 	teevm->atoms = atoms;
+	teevm->nm_tuples = nm_tuples;
 	teevm->base = base;
 	teevm->scheduler = scheduler_make(mall, super_pool);
 	teevm->mall = mall;
@@ -70,7 +75,8 @@ int main(int argc, const char *argv[])
 	return 0;
 }
 
-void preload_module(code_base_t *base, cstr_t *name, atoms_t *atoms, heap_t *hp)
+void preload_module(code_base_t *base,
+	cstr_t *name, atoms_t *atoms, named_tuples_t *nm_tuples, heap_t *hp)
 {
 	modbin_t **mb = modbins;
 	while (*mb)
@@ -80,7 +86,7 @@ void preload_module(code_base_t *base, cstr_t *name, atoms_t *atoms, heap_t *hp)
 			term_t bin = heap_binary(hp, (*mb)->size*8, (*mb)->data);	//TODO: copies data
 			term_t code = binary_to_term(bin, atoms, hp);
 			term_box_t *tb = peel(code);
-			code_base_load(base,
+			code_base_load(base, nm_tuples,
 				tb->tuple.elts[1],
 				tb->tuple.elts[2],
 				tb->tuple.elts[3],
