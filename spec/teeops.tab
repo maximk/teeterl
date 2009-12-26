@@ -240,6 +240,7 @@ nil r
 
 tuple r, u2/arity
 tuple r, t/arity
+ntuple r, t/name
 
 tuple_size r, u2/arity, l/wrong_arity
 tuple_size r, t/arity, l/wrong_arity

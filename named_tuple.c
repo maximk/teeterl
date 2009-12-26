@@ -55,4 +55,12 @@ int named_tuples_set(named_tuples_t *self, term_t name, term_t field)
 	}
 }
 
+int named_tuples_arity(named_tuples_t *self, term_t name)
+{
+	nm_tuple_t *nt = apr_hash_get(self->nm_tuples, &name, sizeof(name));
+	if (nt == 0)
+		return -1;
+	return nt->fields->nelts + 1;	// +1 for tuple name
+}
+
 //EOF

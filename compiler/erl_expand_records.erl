@@ -27,7 +27,7 @@
 -export([module/2]).
 
 -import(lists,   [map/2,foldl/3,foldr/3,sort/1,reverse/1,duplicate/2]).
--import(lists,	 [mapfoldl/3,all/2,member/2]).
+-import(lists,	 [mapfoldl/3,all/2,member/2,append/1]).
 
 -record(exprec, {compile=[],          % Compile flags
                  vcount=0,            % Variable counter
@@ -336,11 +336,11 @@ expr({named_tuple_index,Line,Name,Field}, St) ->
 
 expr({named_tuple,Line,'',Inits}, St) ->
 	Signature = [F || {named_tuple_field,_,{atom,_,F},_} <- Inits],
-	expr({named_tuple,Line,resolve_named_tuple(Signature, St),Inits}, St);
+	Name = resolve_named_tuple(Signature, St),
+	expr({named_tuple,Line,Name,Inits}, St);
 	
 expr({named_tuple,Line,Name,Inits}, St) ->
-	As = [{tuple,Line,[Field,Value]}
-		|| {named_tuple_field,_,Field,Value} <- Inits],
+	As = append([[Field,Value] || {named_tuple_field,_,Field,Value} <- Inits]),
 	C = {call,Line,
 		 {remote,Line,{atom,Line,erlang},{atom,Line,make_named_tuple}},
 		 [{atom,Line,Name}|As]},
@@ -844,7 +844,7 @@ resolve_named_tuple(Signature, St) ->
 	Nts = dict:filter(fun(_Name, Fs) ->
 		all(fun(S) -> member(S, Fs) end, Signature)
 	end, St#exprec.named_tuples),
-	[Name|_] = dict:fetch_keys(Nts),
+	[{atom,_,Name}|_] = dict:fetch_keys(Nts),
 	Name.
 
 %%EOF

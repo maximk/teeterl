@@ -22,6 +22,8 @@
 -define(Tmp, '$1').
 -define(Tmp1, '$2').
 
+-define(NAMED_TUPLE_FIELD(N, F), {literal,{'$NT',N,F}}).
+
 -record(cg, {
 	lcount,
 	break,
@@ -413,6 +415,43 @@ enter_cg(S, As, _Le, _Vdb, Sr, St0) when is_atom(S) ->
 	Ais = cg_enter_args(As, Sr),
 	{Ais ++ [{enter,{l,L}}],Sr,St};
 
+%%
+%%	Named tuple construction
+%%
+
+enter_cg({remote,{atom,erlang},{atom,named_tuple_index}}, As, Le, Vdb, Sr0, St0) ->
+	[{atom,Name},{atom,Field}] = As,
+	
+	NamedField = ?NAMED_TUPLE_FIELD(Name, Field),
+	X = #x{s={set,?Tmp,NamedField},out=[?Tmp]},
+	{Is1,Sr1,St1} = block_scf(X, Vdb, Sr0, St0),
+	
+	{Is2,Sr2} = cg_call_args([{var,?Tmp}], [], Le#l.i, Vdb, Sr1),
+	{Is1 ++ Is2 ++ [return],clear_dead(Sr2, Le#l.i, Vdb),St1};
+
+%% make_named_tuple(Name, Field1, Value1, Field2, Value2, ...)
+
+enter_cg({remote,{atom,erlang},{atom,make_named_tuple}}, As, Le, Vdb, Sr0, St0) ->
+	[{atom,Name}|Inits] = As,
+	
+	Xs1 = [#x{s={ntuple,?Tmp,{literal,Name}},out=[?Tmp]}],
+	Xs2 = map(fun([{atom,F},E]) ->
+		NamedField = ?NAMED_TUPLE_FIELD(Name, F),
+		case E of
+		nil ->		#x{s={dsetel_nil,?Tmp,NamedField},in=[?Tmp]};
+		{var,W} ->	#x{s={dsetel,?Tmp,NamedField,W},in=[?Tmp,W]};
+		O ->		#x{s={dsetel,?Tmp,NamedField,operand(O)},in=[?Tmp]}
+		end
+	end, pairs(Inits)),
+	%Xs3 = [#x{s=noop,i=Le#l.i}],
+
+	{Is1,Sr1,St1} = flatmapfoldl2(fun(X, Sr, St) ->
+		block_scf(X, Vdb, Sr, St)
+	end, Sr0, St0, Xs1 ++ Xs2),
+	
+	{Is2,Sr2} = cg_call_args([{var,?Tmp}], [], Le#l.i, Vdb, Sr1),
+	{Is1 ++ Is2 ++ [return],clear_dead(Sr2, Le#l.i, Vdb),St1};
+
 enter_cg({remote,{atom,erlang},{atom,apply}}, As, _Le, _Vdb, Sr, St) ->
 	Ais = cg_enter_args(As, Sr),
 	{Ais ++ [enter_apply],Sr,St};
@@ -524,7 +563,34 @@ call_cg(S, As, Rs, Le, Vdb, Sr0, St0) when is_atom(S) ->
 
 	{Ais,Sr} = cg_call_args(As, Rs, Le#l.i, Vdb, Sr0),
 	{Ais ++ [{call,{l,L}}],Sr,St};
+
+call_cg({remote,{atom,erlang},{atom,named_tuple_index}}, As, Rs, _Le, Vdb, Sr, St) ->
+	[{atom,Name},{atom,Field}] = As,
+	[{var,V}] = Rs,
 	
+	NamedField = ?NAMED_TUPLE_FIELD(Name, Field),
+	X = #x{s={set,V,NamedField},out=[V]},
+	block_scf(X, Vdb, Sr, St);
+
+call_cg({remote,{atom,erlang},{atom,make_named_tuple}}, As, Rs, Le, Vdb, Sr0, St0) ->
+	[{atom,Name}|Inits] = As,
+	[{var,V}] = Rs,
+	
+	Xs1 = [#x{s={ntuple,V,{literal,Name}},out=[V]}],
+	Xs2 = map(fun([{atom,F},E]) ->
+		NamedField = ?NAMED_TUPLE_FIELD(Name, F),
+		case E of
+		nil ->		#x{s={dsetel_nil,V,NamedField},in=[V]};
+		{var,W} ->	#x{s={dsetel,V,NamedField,W},in=[V,W]};
+		O ->		#x{s={dsetel,V,NamedField,operand(O)},in=[V]}
+		end
+	end, pairs(Inits)),
+	Xs3 = [#x{s=noop,i=Le#l.i}],
+
+	flatmapfoldl2(fun(X, Sr, St) ->
+		block_scf(X, Vdb, Sr, St)
+	end, Sr0, St0, Xs1 ++ Xs2 ++ Xs3);
+
 call_cg({remote,{atom,erlang},{atom,apply}}, As, Rs, Le, Vdb, Sr0, St) ->
 	{Ais,Sr} = cg_call_args(As, Rs, Le#l.i, Vdb, Sr0),
 	{Ais ++ [call_apply],Sr,St};
@@ -1488,5 +1554,13 @@ flatmapfoldl2(F, A0, B0, [Hd|Tail]) ->
     {Rs,A2,B2} = flatmapfoldl2(F, A1, B1, Tail),
     {R++Rs,A2,B2};
 flatmapfoldl2(_, A, B, []) -> {[],A,B}.
+
+pairs(Ls) ->
+	pairs(Ls, []).
+
+pairs([], Pairs) ->
+	reverse(Pairs);
+pairs([A,B|Ls], Pairs) ->
+	pairs(Ls, [[A,B]|Pairs]).
 
 %%EOF

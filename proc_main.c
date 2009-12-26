@@ -4,6 +4,7 @@
 
 #include "proc.h"
 #include "code_base.h"
+#include "named_tuple.h"
 
 #include "teeterl.h"
 #include "opcodes.h"
@@ -3001,6 +3002,22 @@ case OP_TUPLE_R_T:
 	heap_needed -= TUPLE_T_SIZE(arity);
 	set_reg(r, tmp);
 	next(1);
+}
+
+//asm({'ntuple',{r,X},{literal,Y}}) -> [?xxuu(X, 173), {literal,Y}];
+case OP_NTUPLE_R_T:
+{
+	int r = xxux(0);
+	term_t name = ip[1].t;
+	int arity = named_tuples_arity(proc->teevm->nm_tuples, name);
+	term_t tmp = heap_tuple(proc->heap, arity);
+	term_box_t *tb = peel(tmp);
+	int i;
+	tb->tuple.elts[0] = name;
+	for (i = 1; i < arity; i++)
+		tb->tuple.elts[i] = A_UNDEFINED;
+	set_reg(r, tmp);
+	next(2);
 }
 
 //asm({'tuple_size',{r,X},Y,{l,Z}}) when Y =< 65535, Y >= 0 -> [?dduu(Y, X, 183), {l,Z}];

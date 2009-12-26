@@ -964,7 +964,7 @@ lint_module(St) ->
 	    %% Insert name of module as base name, if needed. This is
 	    %% for compile:forms to work with listing files.
 	    St1 = add_default_base(St, St#compile.code),
-	    {ok,St1#compile{warnings=St1#compile.warnings ++ Ws}};
+	    {ok,St1#compile{warnings=St1#compile.warnings ++ Ws,code=Code}};
 	{error,Es,Ws} ->
 	    {error,St#compile{warnings=St#compile.warnings ++ Ws,
 			      errors=St#compile.errors ++ Es}}
