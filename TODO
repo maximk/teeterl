@@ -14,3 +14,4 @@
 - update optimization taking into account possibility of {source,_,_}
 - named tuple update not implemented, e.g. {A.car#model = ""}
 - named tuple access, index, etc does not check that argument is of proper type (no is_record())
+- named tuple patterns not implemented (tough one)
