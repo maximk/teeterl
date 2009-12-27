@@ -429,6 +429,16 @@ enter_cg({remote,{atom,erlang},{atom,named_tuple_index}}, As, Le, Vdb, Sr0, St0)
 	{Is2,Sr2} = cg_call_args([{var,?Tmp}], [], Le#l.i, Vdb, Sr1),
 	{Is1 ++ Is2 ++ [return],clear_dead(Sr2, Le#l.i, Vdb),St1};
 
+enter_cg({remote,{atom,erlang},{atom,named_tuple_field}}, As, Le, Vdb, Sr, St) ->
+	[{var,W},{atom,Name},{atom,Field}] = As,
+	
+	NamedField = ?NAMED_TUPLE_FIELD(Name, Field),
+	X = #x{s={getel,?Tmp,NamedField,W},in=[W],out=[?Tmp]},
+	{Is1,Sr1,St1} = block_scf(X, Vdb, Sr, St),
+
+	{Is2,Sr2} = cg_call_args([{var,?Tmp}], [], Le#l.i, Vdb, Sr1),
+	{Is1 ++ Is2 ++ [return],clear_dead(Sr2, Le#l.i, Vdb),St1};
+
 %% make_named_tuple(Name, Field1, Value1, Field2, Value2, ...)
 
 enter_cg({remote,{atom,erlang},{atom,make_named_tuple}}, As, Le, Vdb, Sr0, St0) ->
@@ -570,6 +580,14 @@ call_cg({remote,{atom,erlang},{atom,named_tuple_index}}, As, Rs, _Le, Vdb, Sr, S
 	
 	NamedField = ?NAMED_TUPLE_FIELD(Name, Field),
 	X = #x{s={set,V,NamedField},out=[V]},
+	block_scf(X, Vdb, Sr, St);
+
+call_cg({remote,{atom,erlang},{atom,named_tuple_field}}, As, Rs, _Le, Vdb, Sr, St) ->
+	[{var,W},{atom,Name},{atom,Field}] = As,
+	[{var,V}] = Rs,
+	
+	NamedField = ?NAMED_TUPLE_FIELD(Name, Field),
+	X = #x{s={getel,V,NamedField,W},in=[W],out=[V]},
 	block_scf(X, Vdb, Sr, St);
 
 call_cg({remote,{atom,erlang},{atom,make_named_tuple}}, As, Rs, Le, Vdb, Sr0, St0) ->

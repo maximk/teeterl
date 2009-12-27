@@ -346,6 +346,17 @@ expr({named_tuple,Line,Name,Inits}, St) ->
 		 [{atom,Line,Name}|As]},
 	expr(C, St);
 
+expr({named_tuple_field,Line,Expr,'',{atom,_,F}=Field}, St) ->
+	Signature = [F],
+	Name = resolve_named_tuple(Signature, St),
+	expr({named_tuple_field,Line,Expr,Name,Field}, St);
+
+expr({named_tuple_field,Line,Expr,Name,Field}, St) ->
+	C = {call,Line,
+		 {remote,Line,{atom,Line,erlang},{atom,Line,named_tuple_field}},
+		 [Expr,{atom,Line,Name},Field]},
+	expr(C, St);
+
 expr({bin,Line,Es0}, St0) ->
     {Es1,St1} = expr_bin(Es0, St0),
     {{bin,Line,Es1},St1};
