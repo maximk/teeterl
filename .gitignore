@@ -1,6 +1,3 @@
-Debug
-VTune
-
 include/apr-util
 include/apr
 
@@ -8,20 +5,15 @@ atoms.inc
 builtins.inc
 modbin.inc
 
-teeterl.ncb
-teeterl.suo
-
-vc70.idb
-vc70.pdb
-
 lib
 
-xbin/*
-bin/*
-ebin/*
+*.cx
+*.x
+*.o
+*.beam
 
-navel
+teeterl
 
 test/snip
 
-*.beam
+cscope.*

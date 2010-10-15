@@ -14,6 +14,8 @@
 #include "list.h"
 #include "navel.h"
 
+#include <stdlib.h>
+
 #define T2H_MAX_SIMPLE_LIST		10
 #define T2H_MAX_SIMPLE_TUPLE	5
 

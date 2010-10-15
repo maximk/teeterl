@@ -198,21 +198,21 @@ duplicate(N, X, L) -> duplicate(N-1, X, [X|L]).
 
 -spec min([T,...]) -> T.
 
-min([H|T]) -> min(T, H).
+min([H|T]) -> min_1(T, H).
 
-min([H|T], Min) when H < Min -> min(T, H);
-min([_|T], Min)              -> min(T, Min);
-min([],    Min)              -> Min. 
+min_1([H|T], Min) when H < Min -> min_1(T, H);
+min_1([_|T], Min)              -> min_1(T, Min);
+min_1([],    Min)              -> Min. 
 
 %% max(L) -> returns the maximum element of the list L
 
 -spec max([T,...]) -> T.
 
-max([H|T]) -> max(T, H).
+max([H|T]) -> max_1(T, H).
 
-max([H|T], Max) when H > Max -> max(T, H);
-max([_|T], Max)              -> max(T, Max);
-max([],    Max)              -> Max.
+max_1([H|T], Max) when H > Max -> max_1(T, H);
+max_1([_|T], Max)              -> max_1(T, Max);
+max_1([],    Max)              -> Max.
 
 %% sublist(List, Start, Length)
 %%  Returns the sub-list starting at Start of length Length.

@@ -47,7 +47,7 @@ term_t bif_open0_3(term_t FileName, term_t Mode, term_t Perms, proc_t *proc)
 		bif_bad_arg0();
 
 	apr_pool_create(&ol, 0);
-	file_name = peel(FileName)->binary.data;
+	file_name = (const char *)peel(FileName)->binary.data;
 	rs = apr_file_open(&file, file_name, (apr_uint32_t)int_value(Mode), (apr_uint32_t)int_value(Perms), ol);
 	if (rs != 0)
 	{

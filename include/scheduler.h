@@ -36,7 +36,10 @@ struct statistics_t {
 	apr_interval_time_t wall_clock_slc;
 };
 
+#ifndef SCHEDULER_T_DEFINED
 typedef struct scheduler_t scheduler_t;
+#define SCHEDULER_T_DEFINED
+#endif
 
 scheduler_t *scheduler_make(outlet_mall_t *mall, apr_pool_t *pool);
 #ifndef SUPPRESS_TRACES

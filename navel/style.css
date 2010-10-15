@@ -1,0 +1,70 @@
+/*
+**
+*/
+
+body
+{
+	font-family: Consolas;
+}
+
+.compare-argument 
+{
+	padding: 50px;
+	float: left;
+	background: #eec;
+	font-size: 24px;
+}
+
+.compare-results
+{
+	padding: 50px;
+	float: left;
+	background: #eee;
+	font-size: 24px;
+}
+
+.compare-selected 
+{
+	background: #fcc;
+}
+
+.compare-container
+{
+	padding: 0 50px;
+}
+
+#sample-terms
+{
+	clear: both;
+	padding: 10px 20px;
+	font-size: 10px;
+}
+
+.tee-noval, .tee-nil, .tee-integer, .tee-atom,
+.tee-pid, .tee-oid .tee-float, .tee-binary, .tee-fun
+{
+	display: inline-block;
+	/*float: left;*/
+}
+
+.tee-list-elem, .tee-tuple-elem
+{
+	clear: left;
+}
+
+.tee-list, .tee-tuple
+{
+	display: inline-block;
+}
+
+.tee-list-leading, .tee-list-body, .tee-list-trailing
+{
+	float: left;
+}
+
+.tee-tuple-leading, .tee-tuple-body
+{
+	float: left;
+}
+
+/*EOF*/

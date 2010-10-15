@@ -125,7 +125,7 @@ apr_status_t heap_gc(heap_t *hp, term_t *roots[], int root_sizes[], int nroots)
 	// and not put on the list
 
 	if (gc_node->next == gc_node ||
-		node_alloc_size(copy_node) > 0 && copy_node != hp->gc_last)
+		(node_alloc_size(copy_node) > 0 && copy_node != hp->gc_last))
 	{
 		list_insert(copy_node, gc_node);
 		hp->gc_last = copy_node;
@@ -135,11 +135,6 @@ apr_status_t heap_gc(heap_t *hp, term_t *roots[], int root_sizes[], int nroots)
 		if (hp->active == copy_node)
 			hp->active = gc_node->next;
 		apr_allocator_free(hp->allocator, copy_node);
-	}
-
-	if (validate_heap(hp) != APR_SUCCESS)
-	{
-		int a = 1; //DBG
 	}
 
 	hp->alloc_size -= node_alloc_size(gc_node);

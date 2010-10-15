@@ -13,10 +13,9 @@ The current version is only able to run a couple of test suites but the
 results of preliminary performance testing indicate that the current version
 is 3-4 times swifter than the previous one.
 
-The current version is being developed under Windows XP. Using Visual
-Studio 5.0+ teeterl can be built from the provided project file. Expect to
-resolve a few dependencies manually. After clean built, just
-hit F5 and point your browser to http://localhost:9090 and rudimentary
+The current version is being developed under OpenSuse 11.3. Expect to
+resolve a few dependencies manually. After clean built, just start ./teeterl
+and point your browser to http://localhost:9090 and rudimentary
 teeterl interface will show up. At that point it would be obvious that
 there is much to be done for the new teeterl.
 

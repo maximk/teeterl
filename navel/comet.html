@@ -1,0 +1,20 @@
+<script>
+	$(function() {
+		$('#puke').click(function() {
+			$.get('/puke');
+		});
+		$('#update').click(function() {
+			$.getJSON('/comet', {}, function(messages) {
+				for (var i = 0; i < messages.length; i++) {
+					var id = messages[i].id;
+					var channel = messages[i].channel;
+					var data = messages[i].data;
+					$('#results').append("<p>" + id + ":" + channel + ":" + data + "</p>");
+				}
+			});
+		});
+	});
+</script>
+<button id="puke">Post message</button>
+<button id="update">Update results</button>
+<p id="results">[Output]</p>

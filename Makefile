@@ -1,130 +1,46 @@
 
-CC			= cl.exe
-LINK		= link.exe
-LIBR		= lib.exe
+ERLC := erlc
+ERL := erl
 
-INCLUDES	= /I include /I include/apr /I include/apr-util
-OPT_OPT		= /MDd /Od
-#OPT_OPT	= /MD /O2 /Ot
-CCOPTS		= /nologo /Gm /Zi /W3 /EHsc $(OPT_OPT) /Fo$B/ \
-			  $(INCLUDES) \
-			  /D WIN32 /D APR_DECLARE_STATIC /D APU_DECLARE_STATIC \
-			  /D DEBUG
+ATOMTAB	:= spec/atoms.tab
+BIFTAB := spec/bif.tab
+OPSTAB := spec/teeops.tab
 
-LDOPTS		= /nologo /debug /subsystem:console /incremental:no \
-			  /nodefaultlib:msvcrt \
-			  /fixed:no
+E := ebin
+C := compiler
+U := util
+F := bif
+M := mod
+X := xbin
+T := test
 
-#LDOPTS		= /nologo /subsystem:console /incremental:no \
-#			  /ignore:4089 /fixed:no
+COMP := $(patsubst $C/%.erl,$E/%.beam,$(wildcard $C/*.erl))
+UTIL := $(patsubst $U/%.erl,$E/%.beam,$(wildcard $U/*.erl))
+BIF := $(patsubst %.c,%.o,$(wildcard $F/*.c))
 
-# NB: 64-bit systems may require larger stack
+OBJS := $(patsubst %.c,%.o,$(wildcard *.c))
 
-APRLIBS		= lib/apr-1.lib \
-			  lib/aprutil-1.lib
-STDLIBS		= kernel32.lib advapi32.lib ws2_32.lib wsock32.lib \
-			  ole32.lib shell32.lib rpcrt4.lib
+MODS := $(patsubst $M/%.erl,$X/%.cx,$(wildcard $M/*.erl))
+XOBJS := $(patsubst %.cx,%.o,$(MODS))
 
-ERLC		= "C:\Program Files\erl5.7.3\bin\erlc.exe"
-ERL			= "C:\Program Files\erl5.7.3\bin\erl.exe"
+APRLIBS := lib/libapr-1.a lib/libaprutil-1.a
 
-B			= bin
-E			= ebin
-X			= xbin
-U			= util
-C			= compiler
-T			= test
+TARGET := teeterl
 
-ATOMTAB		= spec/atoms.tab
-BIFTAB		= spec/bif.tab
-OPSTAB		= spec/teeops.tab
+CPPFLAGS := -I include -I include/apr -I include/apr-util
+CPPFLAGS += -DAPR_DECLARE_STATIC -DAPU_DECLARE_STATIC
+CPPFLAGS += -DLINUX=2 -D_REENTRANT -D_GNU_SOURCE -D_LARGEFILE64_SOURCE
+CPPFLAGS += -DDEBUG
+CFLAGS := -Wall -Werror -g
+LDFLAGS := -pthread
 
-OBJ			= $B/cstr.obj \
-			  $B/atom.obj \
-			  $B/named_tuple.obj \
-			  $B/heap.obj \
-			  $B/heap_gc.obj \
-			  $B/mixed.obj \
-			  $B/bits.obj \
-			  $B/mpi.obj \
-			  $B/list.obj \
-			  $B/term_test.obj \
-			  $B/compare.obj \
-			  $B/compare_test.obj \
-			  $B/exterm.obj \
-			  $B/exterm_test.obj \
-			  $B/code_base.obj \
-			  $B/bif_erlang.obj \
-			  $B/bif_code.obj \
-			  $B/bif_lists.obj \
-			  $B/bif_inet.obj \
-			  $B/bif_gen_tcp.obj \
-			  $B/bif_file.obj \
-			  $B/msg_queue.obj \
-			  $B/proc.obj \
-			  $B/proc_main.obj \
-			  $B/proc_test.obj \
-			  $B/proc_queue.obj \
-			  $B/buffer.obj \
-			  $B/outlet.obj \
-			  $B/outlet_mall.obj \
-			  $B/ol_socket.obj \
-			  $B/ol_listener.obj \
-			  $B/ol_file.obj \
-			  $B/scheduler.obj \
-			  $B/modbin.obj \
-			  $B/teeterl.obj
+.PHONY: default
+default: $(COMP) $(BIF) $(TARGET)
 
-COMP		= $E/tt_compile.beam \
-			  $E/tt_named_tuples.beam \
-			  $E/tt_codegen.beam \
-			  $E/tt_asm.beam \
-			  $E/erl_parse.beam \
-			  $E/erl_lint.beam \
-			  $E/erl_expand_records.beam \
-			  $E/atoms.beam \
-			  $E/opcodes.beam \
-			  $E/bifs.beam \
-			  $E/test_asm.beam
+ALL_OBJS := $(OBJS) $(BIF) $(XOBJS)
 
-MODS		= $X/init.cx \
-			  $X/error_handler.cx \
-			  $X/erlang.cx \
-			  $X/lists.cx \
-			  $X/queue.cx \
-			  $X/string.cx \
-			  $X/format.cx \
-			  $X/proplists.cx \
-			  $X/file.cx \
-			  $X/inet.cx \
-			  $X/gen_tcp.cx \
-			  $X/random.cx \
-			  $X/comet.cx \
-			  $X/test.cx \
-			  $X/navel.cx
-
-TESTS		= $X/tuple_SUITE.x \
-			  $X/lists_SUITE.x \
-			  $X/estone_SUITE.x
-
-XOBJ		= $B/init.obj \
-			  $B/error_handler.obj \
-			  $B/erlang.obj \
-			  $B/lists.obj \
-			  $B/queue.obj \
-			  $B/string.obj \
-			  $B/format.obj \
-			  $B/proplists.obj \
-			  $B/file.obj \
-			  $B/inet.obj \
-			  $B/gen_tcp.obj \
-			  $B/random.obj \
-			  $B/comet.obj \
-			  $B/test.obj \
-			  $B/navel.obj
-
-#$(MODS):	$(COMP)
-#$(TESTS):	$(COMP)
+$(OBJS): %.o: %.c $(DEPS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 include/atom_defs.h atoms.inc compiler/atoms.erl:	$E/atoms_gen.beam $(ATOMTAB) $(BIFTAB)
 	$(ERL) -pa $E -run atoms_gen compile_atoms $(ATOMTAB) $(BIFTAB) \
@@ -142,46 +58,37 @@ modbin.c: modbin.inc
 modbin.inc: $E/mods_gen.beam $(MODS)
 	$(ERL) -pa $E -run mods_gen modules modbin.inc $(MODS) -run init stop -noshell
 
-$B/teeterl.exe:	$(OBJ) $(XOBJ)
-	$(LINK) $(LDOPTS) /out:"$@" $(OBJ) $(XOBJ) $(APRLIBS) $(STDLIBS)
-
 $C/erl_parse.erl: $C/erl_parse.yrl $E/cli_run.beam
 	$(ERL) -pa $E -run cli_run exec1 yecc file $C/erl_parse.yrl -run init stop -noshell
-#
-#	Under observation: comment out when done
-#
-#$X/named_tuple.cx: test/named_tuple.erl $(COMP)
-#	$(ERL) -pa $E \
-#		-run tt_compile files_outdir test/named_tuple.erl $X \
-#		-run init stop -noshell
-	
-all:		$(COMP) $(OBJ) $(TESTS) $B/teeterl.exe
 
-.SUFFIXES:: .erl .c .cx .x
-
-.c{$B}.obj::
-	$(CC) /c $(CCOPTS) $<
-
-{bif}.c{$B}.obj::
-	$(CC) /c $(CCOPTS) $<
-
-{$X}.cx{$B}.obj::
-	$(CC) /c /TC $(CCOPTS) $<
-
-{$U}.erl{$E}.beam::
+$(COMP): $E/%.beam: $C/%.erl
 	$(ERLC) -o $E $<
 
-{$C}.erl{$E}.beam::
+$(UTIL): $E/%.beam: $U/%.erl
 	$(ERLC) -o $E $<
 
-{mod}.erl{$X}.cx::
+$(BIF): %.o: %.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+
+$(XOBJS): %.o: %.cx
+	$(CC) -c -x c $(CFLAGS) $(CPPFLAGS) $< -o $@
+
+$(MODS): $X/%.cx: $M/%.erl
 	$(ERL) -pa $E \
 		-run tt_compile files_outdir $< $X \
 		-run init stop -noshell
 
-{$T}.erl{$X}.x::
-	$(ERL) -pa $E \
-		-run tt_compile files_outdir_binary $< $X \
-		-run init stop -noshell
+$(TARGET):	$(OBJS) $(BIF) $(XOBJS)
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(BIF) $(XOBJS) $(APRLIBS)
+
+define all_sources
+     (find . -follow -name '*.[chS]' -print)
+endef
+
+.PHONY: cscope
+cscope:
+	$(all_sources) > cscope.files
+	cscope -k -b -q
 
 #EOF
+

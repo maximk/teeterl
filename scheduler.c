@@ -17,9 +17,13 @@
 #include "cstr.h"
 #include "list.h"
 
+#include <stdlib.h>
+
 #define INFINITY			(-1)
 
 #define NORMAL_ADVANTAGE	8
+
+const char *stringify_term(term_t t, atoms_t *atoms, apr_pool_t *pool);
 
 void scheduler_park_runnable(scheduler_t *self, proc_t *proc);
 
@@ -424,12 +428,22 @@ void scheduler_dump_core(scheduler_t *self, proc_t *proc)
 	const char *file;
 	int line;
 
+	fprintf(stderr, "******\n");
 	fprintf(stderr, "*** process '%*s' exits unexpectedly\n", s->size, s->data);
 	if (module_source_from_offset(m, offset, &file, &line))
 		fprintf(stderr, "***     at %s:%d\n", file, line);
 	else
-		fprintf(stderr, "***     at [unknown location]\n");
-	fprintf(stderr, "************************************\n");
+	{
+		cstr_t *q = atoms_get(proc->teevm->atoms, atom_index(m->key.module));
+		fprintf(stderr, "***     at mod %*s off %d\n", q->size, q->data, offset);
+	}
+	
+	apr_pool_t *tmp;
+	apr_pool_create(&tmp, 0);
+	const char *r = stringify_term(proc->result.reason, proc->teevm->atoms, tmp);
+	fprintf(stderr, "*** reason=%s\n", r);
+	apr_pool_destroy(tmp);
+	fprintf(stderr, "******\n");
 
 	exit(1);
 }

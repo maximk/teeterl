@@ -5,7 +5,10 @@
 
 #include "outlet.h"
 
+#ifndef OUTLET_MALL_T_DEFINED
 typedef struct outlet_mall_t outlet_mall_t;
+#define OUTLET_MALL_T_DEFINED
+#endif
 
 outlet_mall_t *outlet_mall_make(apr_pool_t *pool);
 void outlet_mall_allot(outlet_mall_t *mall, outlet_t *ol);

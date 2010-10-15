@@ -13,6 +13,10 @@
 #include "code_base.h"
 #include "scheduler.h"
 
+#include <stdlib.h>
+
+const char *stringify_term(term_t t, atoms_t *atoms, apr_pool_t *pool);
+
 int iolist_len(term_t list, int len);
 apr_byte_t *flatten_iolist(term_t list, apr_byte_t *data);
 
@@ -876,14 +880,13 @@ term_t bif_universaltime0(proc_t *proc)
 term_t bif_list_to_binary1(term_t List, proc_t *proc);
 
 // erlang:display/1 [12]
-term_t bif_display1(term_t Iolist, proc_t *proc)
+term_t bif_display1(term_t Term, proc_t *proc)
 {
-	term_t bin = bif_list_to_binary1(Iolist, proc);
-	term_box_t *bb;
-	if (bin == noval)
-		bif_bad_arg(Iolist);
-	bb = peel(bin);
-	fwrite(bb->binary.data, BIN_BYTE_SIZE(bb->binary.bit_size), 1, stderr);
+	apr_pool_t *tmp;
+	apr_pool_create(&tmp, 0);
+	const char *str = stringify_term(Term, proc->teevm->atoms, tmp);
+	fprintf(stderr, "%s\n", str);
+	apr_pool_destroy(tmp);
 	return A_OK;
 }
 

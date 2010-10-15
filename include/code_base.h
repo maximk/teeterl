@@ -6,7 +6,10 @@
 
 #include <apr_hash.h>
 
+#ifndef CODE_BASE_T_DEFINED
 typedef struct code_base_t code_base_t;
+#define CODE_BASE_T_DEFINED
+#endif
 
 typedef struct builtin_t builtin_t;
 struct builtin_t {
@@ -43,7 +46,6 @@ struct source_ref_t {
 	int off_ends;
 };
 
-typedef struct module_t module_t;
 struct module_t {
 	apr_pool_t *mod_pool;
 	heap_t *literals;

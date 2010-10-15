@@ -9,7 +9,7 @@ struct modbin_t {
 	cstr_t *name;
 	int is_preloaded;
 	int size;
-	apr_byte_t data[0];
+	apr_byte_t data[];
 };
 
 extern modbin_t *modbins[];

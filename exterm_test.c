@@ -24,7 +24,7 @@ const char *exterm_test_sample(navel_context_t *cont, apr_pool_t *pool)
 	const char *file_name = "test/sample.x";
 	apr_file_t *bin_file;
 	apr_off_t off;
-	int len;
+	size_t len;
 	apr_byte_t *data;
 	term_t bin, exploded;
 

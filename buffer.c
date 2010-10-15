@@ -70,7 +70,7 @@ int buffer_len(buffer_t *self)
 
 apr_byte_t *buffer_ptr(buffer_t *self)
 {
-	return (char *)self->node + APR_MEMNODE_T_SIZE + self->offset;
+	return (apr_byte_t *)self->node + APR_MEMNODE_T_SIZE + self->offset;
 }
 
 int buffer_available(buffer_t *self)
@@ -108,7 +108,7 @@ apr_status_t buffer_socket_send(buffer_t *self, apr_socket_t *sock)
 {
 	apr_status_t rs;
 	apr_size_t len = buffer_len(self);
-	rs = apr_socket_send(sock, buffer_ptr(self), &len);
+	rs = apr_socket_send(sock, (char *)buffer_ptr(self), &len);
 	if (rs != 0)
 		return rs;
 	self->offset += (int)len;

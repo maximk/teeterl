@@ -14,6 +14,8 @@
 #include "exterm.h"
 #include "list.h"
 
+#include <stdlib.h>
+
 extern modbin_t *modbins[];
 
 void preload_module(code_base_t *base,

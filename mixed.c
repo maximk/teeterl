@@ -7,6 +7,9 @@
 #include "teeterl.h"
 #include "mpi.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 term_t add_mixed(term_t a, term_t b, heap_t *heap)
 {
 	if (!is_int(a) && !is_bignum(a) && !is_float(a))

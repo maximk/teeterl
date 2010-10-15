@@ -1,0 +1,46 @@
+<teeterl>
+<tuple>
+	<val>teeterl</val>
+	<val>sample</val>
+	<list>
+		<tuple><val>coo</val><val>2</val><val>9</val></tuple>
+		<tuple><val>module_info</val><val>0</val><val>107</val></tuple>
+		<tuple><val>module_info</val><val>1</val><val>112</val></tuple>
+		<tuple><val>primes</val><val>1</val><val>13</val></tuple>
+		<tuple><val>remdups</val><val>2</val><val>42</val></tuple>
+		<tuple><val>remdups</val><val>3</val><val>46</val></tuple>
+		<tuple><val>reverse</val><val>1</val><val>72</val></tuple>
+		<tuple><val>reverse</val><val>2</val><val>76</val></tuple>
+		<tuple><val>seq</val><val>2</val><val>94</val></tuple>
+		<tuple><val>sieve</val><val>1</val><val>20</val></tuple>
+		<tuple><val>start</val><val>0</val><val>0</val></tuple>
+	</list>
+	<nil />
+	<nil />
+	<list>
+		<val>146</val><val>8</val>
+		<tuple><val>t</val><val>sample</val></tuple>
+		<val>264</val>
+		<tuple><val>t</val><val>coo</val></tuple>
+		<val>520</val>
+		<tuple><val>t</val><val>[1</val><val>2]</val></tuple>
+		<val>924</val>
+		<tuple><val>b</val><val>0</val></tuple>
+		<val>1234567890</val><val>16777737</val><val>131072</val><val>165</val><val>402</val><val>256</val><val>131077</val><val>162</val>
+		<tuple><val>@</val><val>94</val></tuple>
+		<val>154</val>
+		<tuple><val>@</val><val>20</val></tuple>
+		<val>1234567890</val><val>67</val>
+		<tuple><val>@</val><val>34</val></tuple>
+		<val>33620147</val><val>16777217</val><val>65536</val><val>131328</val><val>162</val>
+		<tuple><val>@</val><val>42</val></tuple>
+		<val>162</val>
+		<tuple><val>@</val><val>20</val></tuple>
+		<val>259</val><val>65710</val><val>165</val><val>68</val>
+		<tuple><val>@</val><val>38</val></tuple>
+		<val>181</val><val>165</val><val>437</val><val>16777646</val><val>424</val>
+		<tuple><val>t</val><val>function_clause</val></tuple>
+	</list>
+	<nil />
+</tuple>
+</teeterl>

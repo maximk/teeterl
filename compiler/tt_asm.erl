@@ -555,7 +555,9 @@ listing_with_offsets({_Mod,Exp,_Lambdas,_Attr,Asm}) ->
 		[Op|Args] = tuple_to_list(OpArgs),
 		Args1 = [pretty_arg(A) || A <- Args],
 		S = string:join(Args1, ", "),
-		io:format("~6w\t\t~w\t~s~n", [Off,Op,S]);
+		%io:format("~6w\t\t~w\t~s~n", [Off,Op,S]);
+		io:format("~6w\t\t~w\t~s -- ~w~n", [Off,Op,S,opcodes:asm(OpArgs)]);
+
 	({Off,Op}) when is_atom(Op) ->
 		io:format("~6w\t\t~w~n", [Off,Op])
 	end, AsmOffs).

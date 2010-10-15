@@ -5,6 +5,8 @@
 #include <apr_tables.h>
 #include <apr_strings.h>
 
+#include <stdlib.h>
+
 #include "navel.h"
 #include "compare.h"
 

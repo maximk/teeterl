@@ -41,7 +41,7 @@ cstr_t *ztos(const char *z, heap_t *hp)
 
 const char *stoz(cstr_t *s, heap_t *hp)
 {
-	char *z = heap_alloc(hp, s->size+1);
+	char *z = (char *)heap_alloc(hp, s->size+1);
 	memmove(z, s->data, s->size);
 	z[s->size] = 0;
 	return z;

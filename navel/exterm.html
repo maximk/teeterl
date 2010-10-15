@@ -1,0 +1,9 @@
+<script>
+	$(function() {
+		$('#run').click(function() {
+			$('#results').load('/exterm/sample');
+		});
+	});
+</script>
+<button id="run">binary_to_term</button>
+<p id="results">[Output]</p>

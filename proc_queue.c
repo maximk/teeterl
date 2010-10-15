@@ -9,6 +9,9 @@
 
 #include "teeterl.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 struct proc_queue_t {
 	apr_array_header_t *q;
 	int hd;

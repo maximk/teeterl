@@ -30,6 +30,9 @@
 #include "teeterl.h"
 #include "binary.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #define splice(__lowbits, __lowmask, __topbits) \
 	(((__topbits) & ~(__lowmask)) | ((__lowbits) & (__lowmask)))
 
@@ -47,13 +50,15 @@ void splice_bits(apr_byte_t *dst, int boff, apr_byte_t *src, int nbits)
 		if (nbits < 8-boff)
 		{
 			int lowbits = (*src & BIN_MASK(nbits)) << (8-boff-nbits);
-			*dst++ = splice(lowbits, mask, *dst);
+			apr_byte_t b = *dst;
+			*dst++ = splice(lowbits, mask, b);
 			nbits = 0;
 		}
 		else
 		{
 			int lowbits = (*src) >> boff;
-			*dst++ = splice(lowbits, mask, *dst);
+			apr_byte_t b = *dst;
+			*dst++ = splice(lowbits, mask, b);
 			nbits -= (8-boff);
 		}
 

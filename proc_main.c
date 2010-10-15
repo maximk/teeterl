@@ -18,6 +18,8 @@
 
 #include "scheduler.h"
 
+#include <stdlib.h>
+
 #define NUM_REGS		256
 #define NUM_FAST_REGS	2
 
@@ -877,7 +879,6 @@ case OP_BXOR_R_R_T:
 {
 	int rc = xxux(0);
 	int ra = xuxx(0);
-	int i = ip[1].i;
 	term_t a = get_reg(ra);
 	term_t b = ip[1].t;
 	term_t c;
@@ -3944,7 +3945,7 @@ default:
 schedule:
 {
 	int i;
-	proc_t *saved_proc = proc;
+	//proc_t *saved_proc = proc;
 	statistics_t *stats;
 
 	if ((proc->result.what == SLICE_RESULT_ERROR ||

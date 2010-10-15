@@ -4,6 +4,8 @@
 
 #include <apr_strings.h>
 
+#include <stdio.h>
+
 #include "teeterl.h"
 #include "term.h"
 #include "heap.h"
@@ -65,13 +67,13 @@ term_t bin2term(apr_byte_t **data, int *bytes_left, atoms_t *atoms, heap_t *heap
 		b = get_byte();
 		c = get_byte();
 		d = get_byte();
-		return tag_int((a << 24) | (b << 16) | (c << 8) | d);
+		return int_to_term((a << 24) | (b << 16) | (c << 8) | d, heap);
 	}
 	case 99:
 	{
 		double value;
 		require(31);
-		sscanf(*data, "%lf", &value);
+		sscanf((const char *)*data, "%lf", &value);
 		(*data) += 31;
 		return heap_float(heap, value);
 	}
@@ -265,7 +267,7 @@ term_t term_to_binary(term_t t, atoms_t *atoms, heap_t *hp)
 	APR_ARRAY_PUSH(buf, apr_byte_t) = 131;
 	result = term2bin(t, atoms, buf);
 	if (result == 0)
-		bin = heap_binary(hp, buf->nelts*8, buf->elts);
+		bin = heap_binary(hp, buf->nelts*8, (apr_byte_t *)buf->elts);
 	apr_pool_destroy(tmp);
 	return bin;
 }
@@ -371,7 +373,7 @@ int term2bin(term_t t, atoms_t *atoms, apr_array_header_t *buf)
 			cons = cb->cons.tail;
 		}
 
-		if (is_string && !is_nil(cons) || len >= 65536)
+		if ((is_string && !is_nil(cons)) || len >= 65536)
 			is_string = 0;
 
 		if (is_string)

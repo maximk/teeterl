@@ -7,6 +7,9 @@
 #include "code_base.h"
 #include "exterm.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 term_t bif_load_module1(term_t Where, proc_t *proc)
 {
 	term_t bin = noval;

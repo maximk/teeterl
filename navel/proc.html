@@ -1,0 +1,12 @@
+<script>
+	$(function() {
+		$('#status').load('/proc/load-sample-code');
+		
+		$('#run').click(function() {
+			$('#results').load('/proc/run');
+		});
+	});
+</script>
+<p id="status">[Status]</p>
+<button id="run">Run</button>
+<p id="results">[Output]</p>

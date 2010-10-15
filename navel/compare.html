@@ -1,0 +1,50 @@
+<script>
+	var left_arg = -1;
+	var right_arg = -1;
+	
+	$(function() {
+		$('#add-more').click(function() {
+			$.get('/compare/add-samples');
+			load_samples();
+		});
+		
+		load_samples();
+		
+		$('#left').click(function() {
+			$('#left').addClass("compare-selected");
+			$('#right').removeClass("compare-selected");
+		});
+		$('#right').click(function() {
+			$('#left').removeClass("compare-selected");
+			$('#right').addClass("compare-selected");
+		});
+	});
+
+	function load_samples() {
+		$('#sample-terms').load('/compare/show-samples', {}, function() {
+			$('#sample-terms li').click(function() {
+				if ($('#right').hasClass("compare-selected"))
+					right_arg = this.id;
+				else
+					left_arg = this.id;
+				doSome();
+			});
+		});
+	}
+
+	function doSome() {
+		if (left_arg != -1)
+			$("#left").text($("#"+left_arg).text());
+		if (right_arg != -1)
+			$("#right").text($("#"+right_arg).text());
+		if (left_arg != -1 && right_arg != -1)
+			$("#results").load("/compare/values/" + left_arg + "/" + right_arg);
+	}
+</script>
+<div class="compare-container">
+	<div id="left" class="compare-argument">[Left arg]</div>
+	<div id="results" class="compare-results"></div>
+	<div id="right" class="compare-argument">[Right arg]</div>
+</div>
+<div id="sample-terms">Sample terms</div>
+<button id="add-more">More terms</button>

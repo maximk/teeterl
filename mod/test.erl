@@ -10,11 +10,15 @@
 
 %%-----------------------------------------------------------------------------
 
-dissect() ->
-	Car1 = {car#model <- "Lexus", mpg <- 30},
-	Car2 = {model <- "Honda"},
-	Index = car#mpg,
-	{"Car1 = ",Car1,"Car2 = ",Car2,"Index = ",Index,"Car1.model = ",Car1.model}.
+dissect() -> ok.
+
+%
+%	NB: Named tuples removed from grammar
+%
+%	Car1 = {car#model <- "Lexus", mpg <- 30},
+%	Car2 = {model <- "Honda"},
+%	Index = car#mpg,
+%	{"Car1 = ",Car1,"Car2 = ",Car2,"Index = ",Index,"Car1.model = ",Car1.model}.
 
 %%-----------------------------------------------------------------------------
 

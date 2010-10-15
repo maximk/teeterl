@@ -1,0 +1,75 @@
+/*
+**
+**
+*/
+
+body 
+{
+	font-family: Consolas;
+}
+
+.tuple-leading 
+{
+	float: left;
+	background-color: #eee;
+}
+
+.tuple-body
+{
+	float: left;
+	background-color: #fee;
+}
+
+.tuple-element
+{
+	float: left;
+	clear: left;
+	background-color: #ffe;
+}
+
+.tuple-short-elements
+{
+	float: left;
+	clear: left;
+	background-color: #ffe;
+}
+
+.tuple-trailer
+{
+	float: left;
+	background-color: #f88;
+}
+
+.list-leading 
+{
+	float: left;
+	background-color: #ee8;
+}
+
+.list-body
+{
+	float: left;
+	background-color: #fea;
+}
+
+.list-element
+{
+	float: left;
+	clear: left;
+	background-color: #ffc;
+}
+
+.list-short-elements
+{
+	float: left;
+	clear: left;
+	background-color: #ffe;
+}
+
+.list-trailer
+{
+	clear: left;
+	background-color: #cce;
+}
+
+/*EOF*/

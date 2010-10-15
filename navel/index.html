@@ -1,0 +1,122 @@
+<html>
+<head>
+<title>teeterl3</title>
+<link rel="stylesheet" type="text/css" href="style.css" />
+<link type="text/css" href="css/hot-sneaks/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
+<script type="text/javascript" src="js/jquery-1.3.2.min.js"></script>
+<script type="text/javascript" src="js/jquery-ui-1.7.2.custom.min.js"></script>
+<script type="text/javascript" src="js/jquery.layout.min.js"></script>
+<script type="text/javascript" src="js/jquery.erlpp.js"></script>
+<script type="text/javascript">
+	function comet_incoming(id, channel, data) {
+		var formatted_data = $.erlpp(data);
+		$('#east').append("<p>[" + id + "] " +
+			channel + ":<br>" + formatted_data + "</p>");
+	}
+
+	$(function() {
+		var comet_last_seen = -1;
+
+		$('body').layout({
+			applyDefaultStyles: true,
+			north__spacing_open: 1,
+			north__togglerLength_open: 0,
+			north__togglerLength_closed: -1,
+			north__resizable: false,
+			north__slidable: false,
+			north__fxName: "none",
+			south__spacing_open: 1,
+			south__togglerLength_open: 0,
+			south__togglerLength_closed: -1,
+			south__resizable: false,
+			south__slidable: false,
+			south__fxName: "none",
+			east__size: 500
+		});
+		
+		//$('#compare > a').click(function() {
+		//	$('#center').load('compare.html');
+		//});
+		
+		$('#fish').click(function() {
+			$.get('/fish');
+		});
+
+		$('#spawn').click(function() {
+			$.get('/spawn');
+		});
+
+		$('#west a.test').click(function() {
+			$('#center').load(this.href);
+			return false;
+		});
+		
+		$('#dissect').click(function() {
+			$.get('/test/dissect', {}, function(data) {
+				$('#center').html($.erlpp(data));
+			}, "json");
+		});
+		
+		function comet() {
+			var params = (comet_last_seen != -1)
+				? comet_last_seen : '';
+				
+			$.ajax({
+				type: 'GET',
+				url: '/comet',
+				contentType: 'application/json; charset=utf-8',
+				data: params,
+				dataType: 'json',
+				
+				success: function(messages) {
+					for (var i = 0; i < messages.length; i++)
+					{
+						var msg_id = messages[i].id;
+						if (comet_last_seen < msg_id)
+							comet_last_seen = msg_id;
+						comet_incoming(msg_id,
+							messages[i].channel, messages[i].data);
+					}
+					comet();
+				},
+
+				error: function(xhr, text) {
+					//alert("comet fails: " + text);
+					comet();
+				}
+			});
+		}
+		
+		comet();
+	});
+</script>
+</head>
+<body>
+<div id="center" class="ui-layout-center"></div>
+<div class="ui-layout-north"><h1>Teeterl</h1></div>
+<div class="ui-layout-south"></div>
+<div id="east" class="ui-layout-east"></div>
+<div id="west" class="ui-layout-west">
+
+	<a class="test" href="/test/run?xbin/tuple_SUITE.x">tuple_SUITE</a><br>
+	<a class="test" href="/test/run?xbin/lists_SUITE.x">lists_SUITE</a><br>
+	<a class="test" href="/test/run?xbin/estone_SUITE.x">estone_SUITE</a><br>
+	<br>
+	<a id="dissect" href="#">dissect()</a><br>
+	<br>
+	<hr>
+	<br>
+	<a id="fish" href="#">give me fish</a><br>
+	
+<!--
+	<ul>
+		<li id="compare"><a href="#">Term comparison</a></li>
+		<li id="proc"><a href="#">Single process</a></li>
+		<li id="exterm"><a href="#">External term format</a></li>
+		<li id="comet"><a href="#">Comet playground</a></li>
+	</ul>
+-->
+</div>
+
+</body>
+</html>

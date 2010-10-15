@@ -33,7 +33,10 @@
 
 #include "cstr.h"
 
+#ifndef ATOMS_T_DEFINED
 typedef struct atoms_t atoms_t;
+#define ATOMS_T_DEFINED
+#endif
 
 #include "atom_defs.h"
 

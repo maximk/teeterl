@@ -22,7 +22,9 @@
 
 main(_Args) ->
 	register(init, self()),
-
+	
+	erlang:display("Starting navel on port 9090...\n"),
+	
 	comet:start(),
 	navel:start(#navconf{www_root="navel",
 						 mod_path="xbin",
@@ -39,7 +41,7 @@ loop() ->
 		loop();
 	#postmortem{}=Pm ->
 		comet:post_message("/sys/scheduler/exit", Pm),
-		erlang:display(concat(["--- exited [",Pm#postmortem.reg_name,"]\n"])),
+		erlang:display({exited,Pm}),
 		loop()
 	end.
 

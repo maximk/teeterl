@@ -9,7 +9,6 @@
 -import(lists, [keysort/2,keyfind/3,keydelete/3,keytake/3,seq/2,foldl/3]).
 -import(lists, [keymember/3,split/2,delete/2,flatmap/2,concat/1,filter/2]).
 -import(lists, [nth/2,all/2,dropwhile/2,usort/1]).
--import(erlang, [max/2]).
 
 -include("v3_life.hrl").
 -include("os.hrl").

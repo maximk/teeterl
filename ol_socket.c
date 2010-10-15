@@ -147,7 +147,7 @@ apr_status_t ol_socket_do_readable(outlet_t *self)
 			int len = buffer_len(data->in_buf);
 
 			if (data->expected_size == 0 ||
-				data->expected_size > 0 && len >= data->expected_size)
+				(data->expected_size > 0 && len >= data->expected_size))
 			{
 				proc_t *proc = self->owner_in;
 
@@ -282,8 +282,8 @@ apr_status_t ol_socket_set_option(outlet_t *self, term_t opt, term_t value)
 			return APR_ENOPROC;
 
 		//enough data may already be there
-		if (data->expected_size == 0 && buffer_len(data->in_buf) > 0 ||
-			data->expected_size > 0 && buffer_len(data->in_buf) >= data->expected_size)
+		if ((data->expected_size == 0 && buffer_len(data->in_buf)) > 0 ||
+			(data->expected_size > 0 && buffer_len(data->in_buf) >= data->expected_size))
 		{
 			proc_t *proc = self->owner_in;
 			int len = (data->expected_size == 0)
