@@ -163,7 +163,8 @@ substr2([_|String], S) -> substr2(String, S-1).
 %% tokens(String, Seperators).
 %%  Return a list of tokens seperated by characters in Seperators.
 
--spec tokens(string(), string()) -> [[char(),...]].
+%%MK: ... spits a syntax error. Why?
+%%-spec tokens(string(), string()) -> [[char(),...]].
 
 tokens(S, Seps) ->
     tokens1(S, Seps, []).

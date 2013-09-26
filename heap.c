@@ -57,7 +57,11 @@ heap_t *heap_make(apr_pool_t *pool)
 
 	// make sure the memory is freed when the pool
 	// is cleared/destroyed
-	apr_pool_cleanup_register(pool, hp, heap_destroy, 0);
+	//
+	//apr_pool_cleanup_register(pool, hp, heap_destroy, 0);
+	//
+	//MK: newer APR requires the child_cleanup arg to be non-null
+	apr_pool_cleanup_register(pool, hp, heap_destroy, heap_destroy);
 
 	return hp;
 }

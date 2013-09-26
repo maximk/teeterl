@@ -92,13 +92,13 @@ reverse([A, B | L]) ->
 %% nth(N, L) returns the N`th element of the list L
 %% nthtail(N, L) returns the N`th tail of the list L
 
--spec nth(pos_integer(), [T,...]) -> T.
+%%-spec nth(pos_integer(), [T,...]) -> T.
 
 nth(1, [H|_]) -> H;
 nth(N, [_|T]) when N > 1 ->
     nth(N - 1, T).
 
--spec nthtail(non_neg_integer(), [T,...]) -> [T].
+%%-spec nthtail(non_neg_integer(), [T,...]) -> [T].
 
 nthtail(1, [_|T]) -> T;
 nthtail(N, [_|T]) when N > 1 ->
@@ -124,7 +124,7 @@ suffix(Suffix, List) ->
 
 %% last(List) returns the last element in a list.
 
--spec last([T,...]) -> T.
+%%-spec last([T,...]) -> T.
 
 last([E|Es]) -> last(E, Es).
 
@@ -196,7 +196,7 @@ duplicate(N, X, L) -> duplicate(N-1, X, [X|L]).
 
 %% min(L) -> returns the minimum element of the list L
 
--spec min([T,...]) -> T.
+%%-spec min([T,...]) -> T.
 
 min([H|T]) -> min_1(T, H).
 
@@ -206,7 +206,7 @@ min_1([],    Min)              -> Min.
 
 %% max(L) -> returns the maximum element of the list L
 
--spec max([T,...]) -> T.
+%%-spec max([T,...]) -> T.
 
 max([H|T]) -> max_1(T, H).
 

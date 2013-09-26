@@ -1844,7 +1844,7 @@ double	mp_get_double(mp_int *mp)
 	int ix;
 	for (ix = USED(mp)-1; ix >= 0; ix--)
 	{
-		value *= (1 << MP_DIGIT_BIT);
+		value *= (1ull << MP_DIGIT_BIT);
 		value += DIGIT(mp, ix);
 	}
 	if (mp_cmp_z(mp) < 0)

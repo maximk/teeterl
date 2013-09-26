@@ -35,6 +35,7 @@ module_t *code_base_lookup(code_base_t *self, term_t module)
 	struct mod_key_t mkey;
 	module_t *m;
 
+	memset(&mkey, 0, sizeof(mkey));
 	mkey.module = module;
 	mkey.is_old = 0;
 	m = apr_hash_get(self->modules, &mkey, sizeof(mkey));
@@ -45,6 +46,7 @@ codel_t *module_lookup(module_t *m, term_t function, int arity)
 {
 	export_t *e;
 	struct exp_key_t ekey;
+	memset(&ekey, 0, sizeof(ekey));
 	ekey.function = function;
 	ekey.arity = arity;
 	e = apr_hash_get(m->exports, &ekey, sizeof(ekey));
@@ -72,6 +74,7 @@ int code_base_load(code_base_t *self, named_tuples_t *nm_tuples,
 	m = apr_palloc(pool, sizeof(*m));
 	m->mod_pool = pool;
 	m->literals = heap_make(pool);
+	memset(&m->key, 0, sizeof(m->key));
 	m->key.module = module;
 	m->key.is_old = 0;
 	m->code_size = 0;
@@ -262,6 +265,7 @@ int code_base_load(code_base_t *self, named_tuples_t *nm_tuples,
 					if (is_atom(function) && is_int(arity) && is_int(offset))
 					{
 						export_t *exp = apr_palloc(pool, sizeof(*exp));
+						memset(&exp->key, 0, sizeof(exp->key));
 						exp->key.function = function;
 						exp->key.arity = int_value(arity);
 						exp->entry = m->code + int_value(offset);

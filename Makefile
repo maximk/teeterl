@@ -1,6 +1,6 @@
 
-ERLC := erlc
-ERL := erl
+ERLC := /usr/local/bin/erlc
+ERL := /usr/local/bin/erl
 
 ATOMTAB	:= spec/atoms.tab
 BIFTAB := spec/bif.tab

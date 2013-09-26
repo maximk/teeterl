@@ -76,27 +76,27 @@ typedef apr_uint32_t uint;
 typedef apr_uint32_t mp_digit;
 typedef apr_uint64_t mp_word;
 
-#define MP_DIGIT_MAX       ((1 << 32)-1)
-#define MP_WORD_MAX        ((1 << 64)-1)
+#define MP_DIGIT_MAX       ((1ull << 32)-1)
+#define MP_WORD_MAX        ((1ull << 64)-1)
 #define MP_DIGIT_SIZE      4
 #define DIGIT_FMT          "%08x"
 //MPI--------------------------------------------------------------------------
 
-#define MAX_INT_VALUE	((1 << (64 - TAG_IMMED1_SIZE - 1)) - 1)
-#define MIN_INT_VALUE	(-1 << (64 - TAG_IMMED1_SIZE - 1))
+#define MAX_INT_VALUE	((1ll << (64 - TAG_IMMED1_SIZE - 1)) - 1)
+#define MIN_INT_VALUE	(-1ll << (64 - TAG_IMMED1_SIZE - 1))
 
 #define INT_BITS	64
 #define INT_BYTES	8
 #define int_to_bytes_msb(buf, i) \
 	do { \
-		buf[0] = i >> 56; \
-		buf[1] = i >> 48; \
-		buf[2] = i >> 40; \
-		buf[3] = i >> 32; \
-		buf[4] = i >> 24; \
-		buf[5] = i >> 16; \
-		buf[6] = i >> 8; \
-		buf[7] = i; \
+		buf[0] = (apr_uint64_t)(i) >> 56; \
+		buf[1] = (apr_uint64_t)(i) >> 48; \
+		buf[2] = (apr_uint64_t)(i) >> 40; \
+		buf[3] = (apr_uint64_t)(i) >> 32; \
+		buf[4] = (apr_uint64_t)(i) >> 24; \
+		buf[5] = (apr_uint64_t)(i) >> 16; \
+		buf[6] = (apr_uint64_t)(i) >> 8; \
+		buf[7] = (apr_uint64_t)(i); \
 	} while (0)
 
 #else
@@ -177,7 +177,7 @@ typedef apr_uint64_t mp_word;
 #define tag_list(p)			((term_t)(p) | 0x7)
 
 // basic term unpacking
-#define peel(t)			((term_box_t *)((t) & ~TAG_PTR_MASK))
+#define peel(t)			((term_box_t *)((apr_uintptr_t)(t) & ~TAG_PTR_MASK))
 #define int_value(t)	((int)(t) >> TAG_IMMED1_SIZE)
 #define atom_index(t)	((uint)(t) >> TAG_IMMED2_SIZE)
 #define pid_serial(t)	((uint)(t) >> TAG_IMMED3_SIZE)
